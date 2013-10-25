@@ -11,6 +11,8 @@
             this.over = false;
             this.displayTooltips = !options.get('disableTooltips');
             this.highlightEnabled = !options.get('disableHighlight');
+            this.touchTooltipHideEnabled  = options.get('touchTooltipHideEnabled')?true:false;
+            this.touchTooltipDuration  = options.get('touchTooltipDuration');
         },
 
         registerSparkline: function (sp) {
@@ -26,6 +28,11 @@
             this.$canvas = $canvas;
             $canvas.mouseenter($.proxy(this.mouseenter, this));
             $canvas.mouseleave($.proxy(this.mouseleave, this));
+            if (this.touchTooltipHideEnabled){
+              $canvas.on('touchend',function(){
+                  window.setTimeout($.proxy(this.mouseleave, this),this.touchTooltipDuration?this.touchTooltipDuration:500); 
+                }.bind(this));
+            }
             $canvas.click($.proxy(this.mouseclick, this));
         },
 
