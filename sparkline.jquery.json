@@ -12,7 +12,7 @@
         "ui",
         "vml"
     ],
-    "version": "2.1.2",
+    "version": "2.1.3a",
     "author": {
         "name": "Gareth Watts",
         "url": "http://gwatts.com/"
@@ -23,7 +23,7 @@
             "url": "http://opensource.org/licenses/BSD-3-Clause"
         }
     ],
-    "bugs": "https://github.com/gwatts/jquery.sparkline/issues",
+    "bugs": "https://github.com/verocca/jquery.sparkline/issues",
     "homepage": "http://omnipotent.net/jquery.sparkline/",
     "demo": "http://omnipotent.net/jquery.sparkline/",
     "docs": "http://omnipotent.net/jquery.sparkline/#s-docs",

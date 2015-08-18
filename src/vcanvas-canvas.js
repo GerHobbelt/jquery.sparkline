@@ -182,11 +182,11 @@
                 shape = shapes[shapeid];
                 this['_draw' + shape.type].apply(this, shape.args);
             }
-            if (!this.interact) {
+            /*if (!this.interact) {
                 // not interactive so no need to keep the shapes array
                 this.shapes = {};
                 this.shapeseq = [];
-            }
+            }*/
         }
 
     });
