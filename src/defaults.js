@@ -89,6 +89,7 @@
             bullet: {
                 targetColor: '#f33',
                 targetWidth: 3, // width of the target bar in pixels
+                targetVerticalPadding: null,
                 performanceColor: '#33f',
                 rangeColors: ['#d3dafe', '#a8b6ff', '#7f94ff'],
                 base: undefined, // set this to a number to change the base start number
