@@ -142,7 +142,7 @@
 
         getRegion: function (el, x, y) {
             x /= this.xScale; 
-            var result = Math.floor(x / this.totalBarWidth);
+            var result = Math.floor(x * window.devicePixelRatio / this.totalBarWidth);
             return (result < 0 || result >= this.values.length) ? undefined : result;
         },
 
