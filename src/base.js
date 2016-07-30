@@ -407,7 +407,7 @@
                 shapeids = this.regionShapes[currentRegion],
                 newShapes;
             // will be null if the region value was null
-            if (shapeids) {
+            if (shapeids >= 0) {
                 newShapes = this.renderRegion(currentRegion, highlight);
                 if ($.isArray(newShapes) || $.isArray(shapeids)) {
                     target.replaceWithShapes(shapeids, newShapes);
