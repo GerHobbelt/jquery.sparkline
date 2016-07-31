@@ -21,7 +21,7 @@
                 regionMap = this.regionMap; // maps regions to value positions
             for (i = regionMap.length; i--;) {
                 if (regionMap[i] !== null && x >= regionMap[i][0] && x <= regionMap[i][1]) {
-                    return regionMap[i][2];
+                    return regionMap[i][2] * window.devicePixelRatio;
                 }
             }
             return undefined;
