@@ -543,9 +543,9 @@
             ret = values[idx];
         }
 
-        return {
-            m: ret,
-            idx: idx
+        return { 
+            m: ret, 
+            idx: idx 
         };
     };
 
@@ -1269,7 +1269,7 @@
                 };
             } else if (colorMap) {
                 if (colorMap.get === undefined) {
-                    colorMap = new RangeMap(colorMap);
+                    colorMap = new RangeMap(colorMap); 
                 }
                 this.colorMapFunction = function(sparkline, options, index, value) {
                     return colorMap.get(value);
@@ -1458,8 +1458,8 @@
                 target = this.target,
                 shapeids = this.regionShapes[currentRegion],
                 newShapes;
-                // will be null if the region value was null
-                if (shapeids >= 0) {
+            // will be null if the region value was null
+            if (shapeids >= 0) {
                 newShapes = this.renderRegion(currentRegion, highlight);
                 if ($.isArray(newShapes) || $.isArray(shapeids)) {
                     target.replaceWithShapes(shapeids, newShapes);
@@ -1529,7 +1529,7 @@
                 regionMap = this.regionMap; // maps regions to value positions
             for (i = regionMap.length; i--;) {
                 if (regionMap[i] !== null && x >= regionMap[i][0] && x <= regionMap[i][1]) {
-                    return regionMap[i][2];
+                    return regionMap[i][2] * window.devicePixelRatio;
                 }
             }
             return undefined;
@@ -1914,7 +1914,7 @@
             this.totalBarWidth = barWidth + barSpacing;
             var rawWidth = (values.length * barWidth) + ((values.length - 1) * barSpacing);
             this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
-            this.width = rawWidth * this.xScale;
+            this.width = rawWidth * this.xScale; 
 
             this.initTarget();
 
@@ -2010,8 +2010,8 @@
         },
 
         getRegion: function (el, x, y) {
-            x /= this.xScale;
-            var result = Math.floor(x / this.totalBarWidth);
+            x /= this.xScale; 
+            var result = Math.floor(x * window.devicePixelRatio / this.totalBarWidth);
             return (result < 0 || result >= this.values.length) ? undefined : result;
         },
 
@@ -2242,14 +2242,14 @@
             this.values = $.map(values, Number);
             var rawWidth = (values.length * barWidth) + ((values.length - 1) * barSpacing);
             this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
-            this.width = rawWidth * this.xScale;
+            this.width = rawWidth * this.xScale; 
 
             this.initColorMap();
             this.initTarget();
         },
 
         getRegion: function (el, x, y) {
-            return Math.floor(x / this.totalBarWidth);
+            return Math.floor(x * window.devicePixelRatio / this.totalBarWidth);
         },
 
         getCurrentRegionFields: function () {
@@ -2342,7 +2342,7 @@
         },
 
         getRegion: function (el, x, y) {
-            return Math.floor(x / this.itemWidth);
+            return Math.floor(x * window.devicePixelRatio / this.itemWidth);
         },
 
         getCurrentRegionFields: function () {
@@ -2405,19 +2405,19 @@
             this.min = min;
             this.max = max;
             this.range = max - min;
-
+			
 			// GRADIENT
 			var colors = options.get('rangeColors');
 			if (options.get('gradient') && colors.length > 1) {
 				var rainbow = new Rainbow();
 				rainbow.setSpectrumByArray(colors);
 				rainbow.setNumberRange(0, this.values.length);
-
+				
 				for (var i = 0; i < this.values.length; i++) {
 					colors[i] = rainbow.colorAt(i);
 				}
 			}
-
+			
 			this.rangeColors = colors;
             this.shapes = {};
             this.valueShapes = {};
@@ -2877,9 +2877,9 @@
      * ]
      * let 1 pixel = 1 minute
      * let 8 am be the sparkline begin
-     * let 8 pm be the sparkline finish
+     * let 8 pm be the sparkline finish 
      * let 720 pixels be the total visible duration
-     * then graph
+     * then graph 
      *  |white for 300 pixels||red for 60 pixels||green for 60 pixels||blue for 300 pixels||white for 120 pixels|
      */
 ;(function ($) {
@@ -2900,8 +2900,8 @@
                 val = Math.abs(val);
                 return isNaN(val) ? 0 : val;
             }
-            var i, data, segment, beginMinutes, finishMinutes, durationMinutes,
-                pixelsPerMinute, userInitHandler, timeMarkPixels, isVerticalOrientation,
+            var i, data, segment, beginMinutes, finishMinutes, durationMinutes, 
+                pixelsPerMinute, userInitHandler, timeMarkPixels, isVerticalOrientation, 
                 timeMarkInterval, timeMarkOffset, timeMark, tick, tickSize;
             timeline._super.init.call(this, el, values, options, width, height);
             // required by barHighlightMixin
@@ -2962,10 +2962,10 @@
                     if (data) {
                         // the minus 2 is to prevent clipping the segment
                         segment = {
-                            x: timeMarkOffset,
-                            y: timeMarkOffset,
-                            w: width - (timeMarkOffset + 1),
-                            h: height - (timeMarkOffset + 1),
+                            x: timeMarkOffset, 
+                            y: timeMarkOffset, 
+                            w: width - (timeMarkOffset + 1), 
+                            h: height - (timeMarkOffset + 1), 
                             data: data
                         };
                         // TODO: adjust shape size for overlapping regions
@@ -3269,7 +3269,7 @@
 
                     done = true;
                 }
-            }
+            } 
             if (!done) {
               context.moveTo(path[0][0] + 0.5, path[0][1] + 0.5);
               for (i = 1, plen = path.length; i < plen; i++) {
@@ -3284,7 +3284,7 @@
                 context.fill();
             }
             if (this.targetX !== undefined && this.targetY !== undefined &&
-                context.isPointInPath(this.targetX, this.targetY)) {
+                context.isPointInPath(this.targetX * window.devicePixelRatio, this.targetY * window.devicePixelRatio)) {
                 this.currentTargetShapeId = shapeid;
             }
         },
@@ -3294,7 +3294,7 @@
             context.beginPath();
             context.arc(x, y, radius, 0, 2 * Math.PI, false);
             if (this.targetX !== undefined && this.targetY !== undefined &&
-                context.isPointInPath(this.targetX, this.targetY)) {
+                context.isPointInPath(this.targetX * window.devicePixelRatio, this.targetY * window.devicePixelRatio)) {
                 this.currentTargetShapeId = shapeid;
             }
             if (lineColor !== undefined) {
@@ -3319,7 +3319,7 @@
                 context.fill();
             }
             if (this.targetX !== undefined && this.targetY !== undefined &&
-                context.isPointInPath(this.targetX, this.targetY)) {
+                context.isPointInPath(this.targetX * window.devicePixelRatio, this.targetY * window.devicePixelRatio)) {
                 this.currentTargetShapeId = shapeid;
             }
         },
@@ -3396,8 +3396,8 @@
         },
 
         getShapeAt: function (el, x, y) {
-            this.targetX = x;
-            this.targetY = y;
+            this.targetX = x * window.devicePixelRatio;
+            this.targetY = y * window.devicePixelRatio;
             this.render();
             return this.currentTargetShapeId;
         },
