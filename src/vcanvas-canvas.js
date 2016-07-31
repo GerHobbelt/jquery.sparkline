@@ -89,7 +89,7 @@
                 context.fill();
             }
             if (this.targetX !== undefined && this.targetY !== undefined &&
-                context.isPointInPath(this.targetX, this.targetY)) {
+                context.isPointInPath(this.targetX * window.devicePixelRatio, this.targetY * window.devicePixelRatio)) {
                 this.currentTargetShapeId = shapeid;
             }
         },
@@ -99,7 +99,7 @@
             context.beginPath();
             context.arc(x, y, radius, 0, 2 * Math.PI, false);
             if (this.targetX !== undefined && this.targetY !== undefined &&
-                context.isPointInPath(this.targetX, this.targetY)) {
+                context.isPointInPath(this.targetX * window.devicePixelRatio, this.targetY * window.devicePixelRatio)) {
                 this.currentTargetShapeId = shapeid;
             }
             if (lineColor !== undefined) {
@@ -124,7 +124,7 @@
                 context.fill();
             }
             if (this.targetX !== undefined && this.targetY !== undefined &&
-                context.isPointInPath(this.targetX, this.targetY)) {
+                context.isPointInPath(this.targetX * window.devicePixelRatio, this.targetY * window.devicePixelRatio)) {
                 this.currentTargetShapeId = shapeid;
             }
         },
@@ -201,8 +201,8 @@
         },
 
         getShapeAt: function (el, x, y) {
-            this.targetX = x;
-            this.targetY = y;
+            this.targetX = x * window.devicePixelRatio;
+            this.targetY = y * window.devicePixelRatio;
             this.render();
             return this.currentTargetShapeId;
         },
