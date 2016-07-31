@@ -28,7 +28,7 @@
         },
 
         getRegion: function (el, x, y) {
-            return Math.floor(x / this.itemWidth);
+            return Math.floor(x * window.devicePixelRatio / this.itemWidth);
         },
 
         getCurrentRegionFields: function () {
