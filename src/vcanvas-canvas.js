@@ -23,6 +23,9 @@
             this.shapeseq = [];
             this.currentTargetShapeId = undefined;
             //$(this.canvas).css({width: this.pixelWidth, height: this.pixelHeight});
+            //if transform applied to parent then need to adjust for that
+            this.devicePixelRatio = ratio;
+            this.ratio = this.pixelWidth / this.canvas.getBoundingClientRect().width;
         },
 
         _getContext: function (lineColor, fillColor, lineWidth) {
@@ -89,7 +92,7 @@
                 context.fill();
             }
             if (this.targetX !== undefined && this.targetY !== undefined &&
-                context.isPointInPath(this.targetX * window.devicePixelRatio, this.targetY * window.devicePixelRatio)) {
+                context.isPointInPath(this.targetX * this.target.ratio, this.targetY * this.target.ratio)) {
                 this.currentTargetShapeId = shapeid;
             }
         },

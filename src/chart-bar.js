@@ -38,16 +38,16 @@
                 }
             }
 
+            this.initTarget();
+
             this.stacked = stacked;
             this.regionShapes = {};
-            this.barWidth = barWidth;
-            this.barSpacing = barSpacing;
-            this.totalBarWidth = barWidth + barSpacing;
-            var rawWidth = (values.length * barWidth) + ((values.length - 1) * barSpacing);
-            this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
-            this.width = rawWidth * this.xScale; 
-
-            this.initTarget();
+            this.barWidth = barWidth * this.target.devicePixelRatio;
+            this.barSpacing = barSpacing * this.target.devicePixelRatio;
+            this.totalBarWidth = (barWidth + barSpacing) * this.target.devicePixelRatio;
+            var rawWidth = (values.length * barWidth * this.target.devicePixelRatio) + ((values.length - 1) * barSpacing * this.target.devicePixelRatio);
+            this.xScale = Math.min(1, rawWidth ? width * this.target.devicePixelRatio / rawWidth : 1);
+            this.width = rawWidth * this.xScale;
 
             if (chartRangeClip) {
                 clipMin = chartRangeMin === undefined ? -Infinity : chartRangeMin;
@@ -141,8 +141,8 @@
         },
 
         getRegion: function (el, x, y) {
-            x /= this.xScale; 
-            var result = Math.floor(x * window.devicePixelRatio / this.totalBarWidth);
+            x /= this.xScale;
+            var result = Math.floor(x * this.target.ratio / this.totalBarWidth);
             return (result < 0 || result >= this.values.length) ? undefined : result;
         },
 

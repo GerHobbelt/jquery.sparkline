@@ -1528,8 +1528,8 @@
             var i,
                 regionMap = this.regionMap; // maps regions to value positions
             for (i = regionMap.length; i--;) {
-                if (regionMap[i] !== null && x >= regionMap[i][0] && x <= regionMap[i][1]) {
-                    return regionMap[i][2] * window.devicePixelRatio;
+                if (regionMap[i] !== null && x * this.target.ratio >= regionMap[i][0] && x * this.target.ratio <= regionMap[i][1]) {
+                    return regionMap[i][2];
                 }
             }
             return undefined;
@@ -1907,16 +1907,16 @@
                 }
             }
 
+            this.initTarget();
+
             this.stacked = stacked;
             this.regionShapes = {};
-            this.barWidth = barWidth;
-            this.barSpacing = barSpacing;
-            this.totalBarWidth = barWidth + barSpacing;
-            var rawWidth = (values.length * barWidth) + ((values.length - 1) * barSpacing);
-            this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
-            this.width = rawWidth * this.xScale; 
-
-            this.initTarget();
+            this.barWidth = barWidth * this.target.devicePixelRatio;
+            this.barSpacing = barSpacing * this.target.devicePixelRatio;
+            this.totalBarWidth = (barWidth + barSpacing) * this.target.devicePixelRatio;
+            var rawWidth = (values.length * barWidth * this.target.devicePixelRatio) + ((values.length - 1) * barSpacing * this.target.devicePixelRatio);
+            this.xScale = Math.min(1, rawWidth ? width * this.target.devicePixelRatio / rawWidth : 1);
+            this.width = rawWidth * this.xScale;
 
             if (chartRangeClip) {
                 clipMin = chartRangeMin === undefined ? -Infinity : chartRangeMin;
@@ -2010,8 +2010,8 @@
         },
 
         getRegion: function (el, x, y) {
-            x /= this.xScale; 
-            var result = Math.floor(x * window.devicePixelRatio / this.totalBarWidth);
+            x /= this.xScale;
+            var result = Math.floor(x * this.target.ratio / this.totalBarWidth);
             return (result < 0 || result >= this.values.length) ? undefined : result;
         },
 
@@ -2235,21 +2235,24 @@
                 barSpacing = parseInt(options.get('barSpacing'), 10);
             tristate._super.init.call(this, el, values, options, width, height);
 
+            this.initTarget();
+
             this.regionShapes = {};
-            this.barWidth = barWidth;
-            this.barSpacing = barSpacing;
-            this.totalBarWidth = barWidth + barSpacing;
+            this.barWidth = barWidth * this.target.devicePixelRatio;
+            this.barSpacing = barSpacing * this.target.devicePixelRatio;
+            this.totalBarWidth = (barWidth + barSpacing) * this.target.devicePixelRatio;
             this.values = $.map(values, Number);
-            var rawWidth = (values.length * barWidth) + ((values.length - 1) * barSpacing);
-            this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
+            var rawWidth = (values.length * barWidth * this.target.devicePixelRatio) + ((values.length - 1) * barSpacing * this.target.devicePixelRatio);
+            this.xScale = Math.min(1, rawWidth ? width * this.target.devicePixelRatio / rawWidth : 1);
             this.width = rawWidth * this.xScale; 
 
             this.initColorMap();
-            this.initTarget();
         },
 
         getRegion: function (el, x, y) {
-            return Math.floor(x * window.devicePixelRatio / this.totalBarWidth);
+            x /= this.xScale;
+            var result = Math.floor(x * this.target.ratio / this.totalBarWidth);
+            return (result < 0 || result >= this.values.length) ? undefined : result;
         },
 
         getCurrentRegionFields: function () {
@@ -3218,6 +3221,9 @@
             this.shapeseq = [];
             this.currentTargetShapeId = undefined;
             //$(this.canvas).css({width: this.pixelWidth, height: this.pixelHeight});
+            //if transform applied to parent then need to adjust for that
+            this.devicePixelRatio = ratio;
+            this.ratio = this.pixelWidth / this.canvas.getBoundingClientRect().width;
         },
 
         _getContext: function (lineColor, fillColor, lineWidth) {
@@ -3284,7 +3290,7 @@
                 context.fill();
             }
             if (this.targetX !== undefined && this.targetY !== undefined &&
-                context.isPointInPath(this.targetX * window.devicePixelRatio, this.targetY * window.devicePixelRatio)) {
+                context.isPointInPath(this.targetX * this.target.ratio, this.targetY * this.target.ratio)) {
                 this.currentTargetShapeId = shapeid;
             }
         },

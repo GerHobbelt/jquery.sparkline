@@ -9,21 +9,24 @@
                 barSpacing = parseInt(options.get('barSpacing'), 10);
             tristate._super.init.call(this, el, values, options, width, height);
 
+            this.initTarget();
+
             this.regionShapes = {};
-            this.barWidth = barWidth;
-            this.barSpacing = barSpacing;
-            this.totalBarWidth = barWidth + barSpacing;
+            this.barWidth = barWidth * this.target.devicePixelRatio;
+            this.barSpacing = barSpacing * this.target.devicePixelRatio;
+            this.totalBarWidth = (barWidth + barSpacing) * this.target.devicePixelRatio;
             this.values = $.map(values, Number);
-            var rawWidth = (values.length * barWidth) + ((values.length - 1) * barSpacing);
-            this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
+            var rawWidth = (values.length * barWidth * this.target.devicePixelRatio) + ((values.length - 1) * barSpacing * this.target.devicePixelRatio);
+            this.xScale = Math.min(1, rawWidth ? width * this.target.devicePixelRatio / rawWidth : 1);
             this.width = rawWidth * this.xScale; 
 
             this.initColorMap();
-            this.initTarget();
         },
 
         getRegion: function (el, x, y) {
-            return Math.floor(x * window.devicePixelRatio / this.totalBarWidth);
+            x /= this.xScale;
+            var result = Math.floor(x * this.target.ratio / this.totalBarWidth);
+            return (result < 0 || result >= this.values.length) ? undefined : result;
         },
 
         getCurrentRegionFields: function () {
