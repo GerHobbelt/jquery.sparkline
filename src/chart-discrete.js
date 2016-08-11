@@ -14,9 +14,9 @@
             this.min = Math.min.apply(Math, values);
             this.max = Math.max.apply(Math, values);
             this.range = this.max - this.min;
-            width = options.get('width') === 'auto' ? values.length * 2 * this.target.devicePixelRatio : this.width;
+            width = options.get('width') === 'auto' ? values.length * 2 * this.target.ratio : this.width;
             //adjust width for pixel ratio
-            width = width * this.target.devicePixelRatio;
+            width = width * this.target.ratio;
             this.width = width;
             this.interval = Math.floor(width / values.length);
             this.itemWidth = width / values.length;
