@@ -2136,6 +2136,8 @@
             this.valueShapes = {}; // maps value offsets to shape ids
             this.values = values = $.map(values, Number);
 
+            this.initTarget();
+
             if (options.get('width') === 'auto') {
                 this.width = this.height;
             }
@@ -2146,13 +2148,13 @@
                 }
             }
             this.total = total;
-            this.initTarget();
-            this.height = this.canvasHeight;
-            this.width = this.canvasWidth;
+
+            this.height = this.canvasHeight * this.target.devicePixelRatio;
+            this.width = this.canvasWidth * this.target.devicePixelRatio;
         },
 
         getRegion: function (el, x, y) {
-            var shapeid = this.target.getShapeAt(el, x, y);
+            var shapeid = this.target.getShapeAt(el, x * this.target.ratio, y * this.target.ratio);
             return (shapeid !== undefined && this.shapes[shapeid] !== undefined) ? this.shapes[shapeid] : undefined;
         },
 
