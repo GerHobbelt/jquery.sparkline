@@ -28,7 +28,7 @@
         },
 
         getRegion: function (el, x, y) {
-            var shapeid = this.target.getShapeAt(el, x, y);
+            var shapeid = this.target.getShapeAt(el, x * this.target.ratio, y * this.target.ratio);
             return (shapeid !== undefined && this.shapes[shapeid] !== undefined) ? this.shapes[shapeid] : undefined;
         },
 

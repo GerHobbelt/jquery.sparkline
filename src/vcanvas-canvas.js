@@ -92,7 +92,7 @@
                 context.fill();
             }
             if (this.targetX !== undefined && this.targetY !== undefined &&
-                context.isPointInPath(this.targetX * this.target.ratio, this.targetY * this.target.ratio)) {
+                context.isPointInPath(this.targetX, this.targetY)) {
                 this.currentTargetShapeId = shapeid;
             }
         },
@@ -102,7 +102,7 @@
             context.beginPath();
             context.arc(x, y, radius, 0, 2 * Math.PI, false);
             if (this.targetX !== undefined && this.targetY !== undefined &&
-                context.isPointInPath(this.targetX * window.devicePixelRatio, this.targetY * window.devicePixelRatio)) {
+                context.isPointInPath(this.targetX, this.targetY)) {
                 this.currentTargetShapeId = shapeid;
             }
             if (lineColor !== undefined) {
@@ -127,7 +127,7 @@
                 context.fill();
             }
             if (this.targetX !== undefined && this.targetY !== undefined &&
-                context.isPointInPath(this.targetX * window.devicePixelRatio, this.targetY * window.devicePixelRatio)) {
+                context.isPointInPath(this.targetX, this.targetY)) {
                 this.currentTargetShapeId = shapeid;
             }
         },
