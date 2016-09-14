@@ -14,8 +14,8 @@
             vals = values.slice();
             vals[0] = vals[0] === null ? vals[2] : vals[0];
             vals[1] = values[1] === null ? vals[2] : vals[1];
-            min = Math.min.apply(Math, values);
-            max = Math.max.apply(Math, values);
+            min = options.get('chartRangeMin') === undefined ? Math.min.apply(Math, values) : options.get('chartRangeMin');
+            max = options.get('chartRangeMax') === undefined ? Math.max.apply(Math, values) : options.get('chartRangeMax');
             if (options.get('base') === undefined) {
                 min = min < 0 ? min : 0;
             } else {
