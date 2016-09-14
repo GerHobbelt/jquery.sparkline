@@ -33,6 +33,7 @@
                 spotColor: '#f80',
                 highlightSpotColor: '#5f5',
                 highlightLineColor: '#f22',
+                refLineColor: '#f22',
                 spotRadius: 1.5,
                 minSpotColor: '#f80',
                 maxSpotColor: '#f80',
