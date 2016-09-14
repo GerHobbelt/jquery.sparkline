@@ -115,8 +115,8 @@
 *   numberDecimalMark - Character to use for the decimal point when formatting numbers - Defaults to "."
 *   numberDigitGroupCount - Number of digits between group separator - Defaults to 3
 *
-* There are 7 types of sparkline, selected by supplying a "type" option of 'line' (default),
-* 'bar', 'tristate', 'bullet', 'discrete', 'pie' or 'box'
+* There are 8 types of sparkline, selected by supplying a "type" option of 'line' (default),
+* 'bar', 'tristate', 'bullet', 'discrete', 'pie', 'box' or 'stack'
 *    line - Line chart.  Options:
 *       spotColor - Set to '' to not end each line in a circular spot
 *       minSpotColor - If set, color of spot at minimum value
@@ -172,6 +172,8 @@
 *       offset - Angle in degrees to offset the first slice - Try -90 or +90
 *       borderWidth - Width of border to draw around the pie chart, in pixels - Defaults to 0 (no border)
 *       borderColor - Color to use for the pie chart border - Defaults to #000
+*   stack - Horizontal stack chart. Options:
+*       sliceColors - An array of colors to use for pie slices
 *
 *   box - Box plot. Options:
 *       raw - Set to true to supply pre-computed plot points as values
@@ -217,6 +219,5 @@
         getDefaults, createClass, SPFormat, clipval, quartile, normalizeValue, normalizeValues,
         remove, isNumber, all, sum, addCSS, ensureArray, formatNumber, RangeMap,
         MouseHandler, Tooltip, barHighlightMixin,
-        line, bar, tristate, discrete, bullet, pie, box, defaultStyles, initStyles,
+        line, bar, tristate, discrete, bullet, pie, stack, box, defaultStyles, initStyles,
         VShape, VCanvas_base, VCanvas_canvas, VCanvas_vml, pending, shapeCount = 0;
-

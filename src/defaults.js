@@ -105,6 +105,15 @@
                 borderColor: '#000',
                 tooltipFormat: new SPFormat('<span style="color: {{color}}">&#9679;</span> {{value}} ({{percent.1}}%)')
             },
+            // Defaults for stack charts
+            stack: {
+                offset: 0,
+                sliceColors: ['#3366cc', '#dc3912', '#ff9900', '#109618', '#66aa00',
+                    '#dd4477', '#0099c6', '#990099'],
+                borderWidth: 0,
+                borderColor: '#000',
+                tooltipFormat: new SPFormat('<span style="color: {{color}}">&#9679;</span> {{value}} ({{percent.1}}%)')
+            },
             // Defaults for box plots
             box: {
                 raw: false,
@@ -154,4 +163,3 @@
             'font: 10px arial, san serif;' +
             'text-align: left;' +
             '}';
-

@@ -16,6 +16,7 @@ SRC_FILES = $(SRC_DIR)/header.js\
 	$(SRC_DIR)/chart-discrete.js\
 	$(SRC_DIR)/chart-bullet.js\
 	$(SRC_DIR)/chart-pie.js\
+	$(SRC_DIR)/chart-stack.js\
 	$(SRC_DIR)/chart-box.js\
 	$(SRC_DIR)/vcanvas-base.js\
 	$(SRC_DIR)/vcanvas-canvas.js\
@@ -37,6 +38,6 @@ jqs-min: jqs
 
 jqs-gzip: jqs
 	gzip -9 < dist/jquery.sparkline.js >dist/jquery.sparkline.js.gz
-	
+
 jqs-min-gzip: jqs-min
 	gzip -9 < dist/jquery.sparkline.min.js >dist/jquery.sparkline.min.js.gz
