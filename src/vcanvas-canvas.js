@@ -5,12 +5,19 @@
             if (target[0]) {
                 target = target[0];
             }
+            this.context = this.canvas.getContext('2d');
+
+            var devicePixelRatio = window.devicePixelRatio || 1,
+                backingStoreRatio = this.context.webkitBackingStorePixelRatio || this.context.mozBackingStorePixelRatio || this.context.msBackingStorePixelRatio || this.context.oBackingStorePixelRatio || this.context.backingStorePixelRatio || 1,
+                ratio = devicePixelRatio / backingStoreRatio;
+
             $.data(target, '_jqs_vcanvas', this);
             $(this.canvas).css({ display: 'inline-block', width: width, height: height, verticalAlign: 'top' });
             this._insert(this.canvas, target);
             this._calculatePixelDims(width, height, this.canvas);
-            this.canvas.width = this.pixelWidth;
-            this.canvas.height = this.pixelHeight;
+            this.canvas.width = this.pixelWidth * ratio;
+            this.canvas.height = this.pixelHeight * ratio;
+            this.context.scale(ratio, ratio);
             this.interact = interact;
             this.shapes = {};
             this.shapeseq = [];
