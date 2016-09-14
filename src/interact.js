@@ -88,10 +88,10 @@
             this.currentPageX = e.pageX;
             this.currentPageY = e.pageY;
             this.currentEl = e.target;
+            this.updateDisplay();
             if (this.tooltip) {
                 this.tooltip.updatePosition(e.pageX, e.pageY);
             }
-            this.updateDisplay();
         },
 
         updateDisplay: function () {
