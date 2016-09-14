@@ -246,8 +246,8 @@
                             path = [];
                             paths.push(path);
                         }
-                        vertices.push(null);
                     }
+                    vertices.push(null);
                 } else {
                     if (y < this.miny) {
                         y = this.miny;
