@@ -90,6 +90,7 @@
                 options = this.options,
                 radius = this.radius,
                 borderWidth = options.get('borderWidth'),
+                donutWidth = options.get('donutWidth'),
                 shape, i;
 
             if (!pie._super.render.call(this)) {
@@ -105,6 +106,10 @@
                     this.valueShapes[i] = shape.id; // store just the shapeid
                     this.shapes[shape.id] = i;
                 }
+            }
+            if (donutWidth) {
+                target.drawCircle(radius, radius, radius - donutWidth, options.get('donutColor'), 
+                    options.get('donutColor'), 0).append();
             }
             target.render();
         }
