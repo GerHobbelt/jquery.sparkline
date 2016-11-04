@@ -9,8 +9,17 @@
             $(this.canvas).css({ display: 'inline-block', width: width, height: height, verticalAlign: 'top' });
             this._insert(this.canvas, target);
             this._calculatePixelDims(width, height, this.canvas);
-            this.canvas.width = this.pixelWidth;
-            this.canvas.height = this.pixelHeight;
+            if (window.devicePixelRatio > 1)
+            {
+                this.canvas.width = this.pixelWidth * window.devicePixelRatio;
+                this.canvas.height = this.pixelHeight * window.devicePixelRatio;
+                this.canvas.getContext('2d').scale(window.devicePixelRatio, window.devicePixelRatio);
+            }
+            else
+            {
+                this.canvas.width = this.pixelWidth;
+                this.canvas.height = this.pixelHeight;
+            }
             this.interact = interact;
             this.shapes = {};
             this.shapeseq = [];
