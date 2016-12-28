@@ -1,0 +1,32 @@
+{
+  "name": "jquery.sparkline",
+  "version": "2.1.2",
+  "description": "Easily generate small, inline sparkline charts directly in the browser",
+  "main": "jquery.sparkline.js",
+  "scripts": {
+    "test": "node build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/galic/jquery.sparkline.git"
+  },
+  "keywords": [
+    "canvas",
+    "charts",
+    "graphics",
+    "graphing",
+    "graph",
+    "sparklines",
+    "ui",
+    "vml"
+  ],
+  "author": "Gareth Watts",
+  "license": "BSD-3-Clause",
+  "bugs": {
+    "url": "https://github.com/galic/jquery.sparkline/issues"
+  },
+  "homepage": "https://github.com/galic/jquery.sparkline#readme",
+  "devDependencies": {
+    "uglify-js": "^2.7.5"
+  }
+}
