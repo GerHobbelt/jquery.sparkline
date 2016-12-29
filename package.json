@@ -1,6 +1,6 @@
 {
   "name": "jquery.sparkline",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Easily generate small, inline sparkline charts directly in the browser",
   "main": "jquery.sparkline.js",
   "scripts": {
