@@ -4,7 +4,7 @@
   "description": "Easily generate small, inline sparkline charts directly in the browser",
   "main": "jquery.sparkline.js",
   "scripts": {
-    "test": "node build"
+    "serve": "browser-sync start --server --files 'dist/*.js'"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,8 @@
   },
   "homepage": "https://github.com/galic/jquery.sparkline#readme",
   "devDependencies": {
+    "browser-sync": "^2.18.6",
+    "eslint": "^3.13.0",
     "uglify-js": "^2.7.5"
   }
 }
