@@ -112,7 +112,8 @@
                  tooltiphtml, sp, i, result, changeEvent;
             // localX/localY fix issue #50 with Google Chrome
             // and subpixel rendering
-
+            localX = Math.max(0, localX);
+            localY = Math.max(0, localY);
             if (!this.over) {
                 return;
             }
