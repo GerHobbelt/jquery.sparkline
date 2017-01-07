@@ -17,3 +17,9 @@ for live examples and documentation.
 Released under the New BSD License
 
 (c) Splunk, Inc 2012
+
+For build:
+node build
+
+For browsing index.html:
+npm run serve

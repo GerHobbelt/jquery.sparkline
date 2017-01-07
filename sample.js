@@ -1,4 +1,4 @@
-(function () {
+(function ($) {
     'use strict';
 
     // Line charts taking their values from the tag
@@ -68,7 +68,7 @@
     // Bullet charts
     $('.sparkbullet').sparkline('html', { type: 'bullet' });
 
-})();
+})(jQuery);
 
 /** Draw all the example sparklines on the index page **/
 function drawDocSparklines() {
