@@ -2,29 +2,22 @@
 <html lang="en">
 
 <head>
-    <title></title>
+    <title>sparkline example</title>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-</head>
-<style>
+    <link rel="stylesheet" href="style.css">
 
-    p {
-        /*line-height: 1em;*/
-        font-size: 1.2em;
-    }
-    #area1 {
-        width: 50%;
-        float: left;
-    }
-    #area2 {
-        width: 50%;
-        margin-left: 50%;
-    }
-</style>
+
+</head>
 
 <body>
-    <h1>Sample graphics sparkline</h1>
     <div class="wrapper">
+        <h1>Sample graphics sparkline</h1>
+        <nav>
+            <a href="index.html">ordinary version</a>
+            <a href="index-bootstrap.html">bootstrap version</a>
+        </nav>
+
         <div id="area1">
             <p>
                 Mouse speed <span id="mousespeed">Loading..</span>
@@ -89,7 +82,58 @@
             </p>
         </div>
         <div id="area2">
-            area 2
+            <div id="dlg">
+                <h4>Try It Out</h4>
+                <p id="result">
+                    <span data-values="1,2,4,3,5"></span>
+                </p>
+                <ul id="settings">
+                    <li>
+                        <span>Type graph:</span>
+                        <select name="chart-type">
+                            <option value="line">Line</option>
+                            <option value="bar">Bar</option>
+                            <option value="tristate">Tristate</option>
+                            <option value="discrete">Discrete</option>
+                            <option value="bullet">Bullet</option>
+                            <option value="pie">Pie</option>
+                            <option value="box">Box Plot</option>
+                        </select>
+                    </li>
+                    <li>
+                        <span data-setting="values">Values:</span>
+                        <input type="text" name="values" value="5,6,7,9,9,5,3,2,2,4,6,7">
+                    </li>
+                    <li>
+                        <span data-setting="width">Width:</span>
+                        <input type="text" name="width" value="auto">
+                    </li>
+                    <li>
+                        <span data-setting="height">Height:</span>
+                        <input type="text" name="height" value="auto">
+                    </li>
+                    <li>
+                        <span data-setting="lineColor">Line Colour:</span>
+                        <input type="text" name="lineColor" value="0000f0">
+                    </li>
+                    <li>
+                        <span data-setting="fillColor">Fill Colour:</span>
+                        <input type="text" name="fillColor" value="0000f0">
+                    </li>
+                    <li>
+                        <span data-setting="lineWidth">Line width:</span>
+                        <input type="text" name="lineWidth" value="1">
+                    </li>
+                    <li>
+                        <span data-setting="spotColor">Spot Colour:</span>
+                        <input type="text" name="spotColor" value="0000f0">
+                    </li>
+                    <li>
+                        <span></span>
+                        <button>Apply</button>
+                    </li>
+                </ul>
+            </div>
         </div>
     </div>
 

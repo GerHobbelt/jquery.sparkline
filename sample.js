@@ -68,7 +68,33 @@
     // Bullet charts
     $('.sparkbullet').sparkline('html', { type: 'bullet' });
 
+    // custom dialog
+    CustomDlg($);
+    //event apply button click
+    $('#dlg button').click(function () {
+        CustomDlg($);
+    });
+
 })(jQuery);
+
+function CustomDlg($) {
+    //var dlg = $('#dlg');
+    var sparklineEl = $('#result span');
+
+    //get values from input
+    var valuesEl = $('#settings input[name*="values"]');
+    var values = valuesEl.val().split(',');
+    //get type graph
+    var typeEl = $('#settings select[name*="chart-type"]');
+    var chartType = {
+        type: typeEl.val()
+    };
+    //chartType.type = typeEl.val();
+
+    //sparklineEl.attr('data-values',valuesEl.val());
+
+    sparklineEl.sparkline(values, chartType);
+}
 
 /** Draw all the example sparklines on the index page **/
 function drawDocSparklines() {

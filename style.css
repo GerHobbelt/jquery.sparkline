@@ -1,0 +1,55 @@
+body {
+    margin: 0;
+}
+
+.wrapper {
+    padding-right: 25px;
+    padding-left: 25px;
+    margin-right: auto;
+    margin-left: auto;
+    width: 90%;
+}
+
+nav > a {
+    color: #00f;
+    font-size: 1em;
+    padding: 7px 15px;
+    background-color: #eee;
+}
+nav > a:hover {
+    background-color: #ccc;
+}
+
+#area1 {
+    width: 50%;
+    float: left;
+}
+#area2 {
+    width: 50%;
+    margin-left: 50%;
+}
+
+#dlg {
+    border: 1px solid #ccc;
+    padding: 10px;
+}
+#dlg h4, #result {
+    text-align: center;
+}
+#result {
+    margin-bottom: 1em;
+}
+#settings {
+    list-style: none;
+}
+#settings > li {
+    margin-bottom: 3px;
+}
+#settings > li > span {
+    display: inline-block;
+    width: 25%;
+}
+#settings > li > input, #settings > li > select {
+    display: inline-block;
+    width: 70%;
+}
