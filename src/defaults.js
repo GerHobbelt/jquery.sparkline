@@ -21,7 +21,7 @@
                 tooltipPrefix: '',
                 tooltipSuffix: '',
                 touchTooltipHideEnabled: true,
-		touchTooltipDuration: 500,
+                touchTooltipDuration: 500,
                 disableHiddenCheck: false,
                 numberFormatter: false,
                 numberDigitGroupCount: 3,

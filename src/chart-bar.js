@@ -15,6 +15,7 @@
                 isStackString, groupMin, groupMax, stackRanges, stackRangesNeg, stackTotals, actualMin, actualMax,
                 numValues, i, vlen, range, zeroAxis, xaxisOffset, min, max, clipMin, clipMax,
                 stacked, vlist, j, slen, svals, val, yoffset, yMaxCalc, canvasHeightEf;
+
             bar._super.init.call(this, el, values, options, width, height);
 
             // scan values to determine whether to stack bars
@@ -43,20 +44,20 @@
             this.barWidth = barWidth;
             this.barSpacing = barSpacing;
             this.totalBarWidth = barWidth + barSpacing;
-            var rawWidth = (values.length * barWidth) + ((values.length - 1) * barSpacing);
+            var rawWidth = values.length * barWidth + (values.length - 1) * barSpacing;
             this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
             this.width = rawWidth * this.xScale; 
 
             this.initTarget();
 
             if (chartRangeClip) {
-                clipMin = chartRangeMin === undefined ? -Infinity : chartRangeMin;
-                clipMax = chartRangeMax === undefined ? Infinity : chartRangeMax;
+                clipMin = chartRangeMin == null ? -Infinity : chartRangeMin;
+                clipMax = chartRangeMax == null ? Infinity : chartRangeMax;
             }
-			if (stacked) {
-				actualMin = chartRangeMin === undefined ? stackMin : Math.min(stackMin, chartRangeMin);
-				actualMax = chartRangeMax === undefined ? stackMax : Math.max(stackMax, chartRangeMax);
-			}
+            if (stacked) {
+                actualMin = chartRangeMin == null ? stackMin : Math.min(stackMin, chartRangeMin);
+                actualMax = chartRangeMax == null ? stackMax : Math.max(stackMax, chartRangeMax);
+            }
 
             numValues = [];
             stackRanges = stacked ? [] : numValues;
@@ -68,7 +69,6 @@
                     values[i] = svals = [];
                     stackTotals[i] = 0;
                     stackRanges[i] = stackRangesNeg[i] = 0;
-                    var stacksInThisOffset = 0;
                     for (j = 0, slen = vlist.length; j < slen; j++) {
                         val = svals[j] = chartRangeClip ? clipval(vlist[j], clipMin, clipMax) : vlist[j];
                         if (val !== null) {
@@ -85,7 +85,6 @@
                                 stackRanges[i] += Math.abs(val - (val < 0 ? actualMax : actualMin));
                             }
                             numValues.push(val);
-                            stacksInThisOffset++;
                         }
                     }
                 } else {
@@ -101,17 +100,17 @@
             this.min = min = Math.min.apply(Math, numValues);
             this.stackMax = stackMax = stacked ? Math.max.apply(Math, stackTotals) : max;
             this.stackMin = stackMin = stacked ? Math.min.apply(Math, numValues) : min;
-//            this.stackRanges = stackRanges;
+            this.stackRanges = stackRanges;
             this.stackTotals = stackTotals;
 
-            if (chartRangeMin !== undefined && (chartRangeClip || chartRangeMin < min)) {
+            if (chartRangeMin != null && (chartRangeClip || chartRangeMin < min)) {
                 min = chartRangeMin;
             }
-            if (chartRangeMax !== undefined && (chartRangeClip || chartRangeMax > max)) {
+            if (chartRangeMax != null && (chartRangeClip || chartRangeMax > max)) {
                 max = chartRangeMax;
             }
 
-            this.zeroAxis = zeroAxis = options.get('zeroAxis', true);
+            this.zeroAxis = zeroAxis = !!options.get('zeroAxis', true);
             if (min >= 0 && max >= 0 && zeroAxis) {
                 xaxisOffset = 0;
             } else if (zeroAxis === false) {
@@ -126,7 +125,7 @@
             if (zeroAxis) {
                 range = stacked ? stackMax : max;
             } else {
-                range = stacked ? (Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg)) : max - min;
+                range = stacked ? Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg) : max - min;
             }
             // as we plot zero/min values a single pixel line, we add a pixel to all other
             // values - Reduce the effective canvas size to suit

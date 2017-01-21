@@ -261,7 +261,7 @@
                 tooltipPrefix: '',
                 tooltipSuffix: '',
                 touchTooltipHideEnabled: true,
-		touchTooltipDuration: 500,
+                touchTooltipDuration: 500,
                 disableHiddenCheck: false,
                 numberFormatter: false,
                 numberDigitGroupCount: 3,
@@ -1030,7 +1030,6 @@
                 }
                 x = this.mousex - this.offsetLeft;
                 y = this.mousey - this.offsetTop;
-
             } else {
                 this.mousex = x = x - this.offsetLeft;
                 this.mousey = y = y - this.offsetTop;
@@ -1168,9 +1167,9 @@
                 done.push(i);
             } else if (!$(el).closest('html').length && !$.data(el, '_jqs_pending')) {
                 // element has been inserted and removed from the DOM
-                // If it was not yet inserted into the dom then the .data request
+                // If it was not yet inserted into the DOM then the .data request
                 // will return true.
-                // removing from the dom causes the data to be removed.
+                // removing from the DOM causes the data to be removed.
                 $.data(pending[i][0], '_jqs_pending', false);
                 done.push(i);
             }
@@ -1322,11 +1321,22 @@
                 highlightEnabled = !this.options.get('disableHighlight'),
                 newRegion;
             // CUSTOM MOD: proper hover detection considering padding as well
-            var cW = $('canvas',this.el).width() + parseInt($('canvas',this.el).css('padding-left')) + parseInt($('canvas',this.el).css('padding-right'))
+            var cW = $('canvas', this.el).width() + parseInt($('canvas', this.el).css('padding-left')) + parseInt($('canvas', this.el).css('padding-right'));
             // if (x > this.canvasWidth || y > this.canvasHeight || x < 0 || y < 0) {
             if (x > cW || y > this.canvasHeight || x < 0 || y < 0) {
                 return null;
             }
+
+            // correct for device scaling factor: we convert from logical coordinates to device *canvas* coordinates here.
+            // It's hacky, but I can't find a better place to do this now; the alternative is to patch the getRegion() implementation
+            // for every chart... :-(
+            var target = $.data(this.el, '_jqs_vcanvas');
+            if (target) {
+                console.log('getRegion: ', x, y, this.pixelScale, target);
+                x *= target.pixelScale;
+                y *= target.pixelScale;
+            }
+
             newRegion = this.getRegion(el, x, y);
             if (currentRegion !== newRegion) {
                 if (currentRegion !== undefined && highlightEnabled) {
@@ -1361,7 +1371,8 @@
             this.changeHighlight(false);
         },
 
-        changeHighlight: function (highlight)  {},
+        changeHighlight: function (highlight) {
+        },
 
         /**
          * Fetch the HTML to display as a tooltip
@@ -1402,7 +1413,7 @@
                 newFields = [];
                 for (i = fields.length; i--;) {
                     fv = fields[i][showFieldsKey];
-                    if ((j = $.inArray(fv, showFields)) != -1) {
+                    if ((j = $.inArray(fv, showFields)) !== -1) {
                         newFields[j] = fields[i];
                     }
                 }
@@ -1445,7 +1456,8 @@
             return '';
         },
 
-        getCurrentRegionFields: function () {},
+        getCurrentRegionFields: function () {
+        },
 
         calcHighlightColor: function (color, options) {
             var highlightColor = options.get('highlightColor'),
@@ -1904,6 +1916,7 @@
                 isStackString, groupMin, groupMax, stackRanges, stackRangesNeg, stackTotals, actualMin, actualMax,
                 numValues, i, vlen, range, zeroAxis, xaxisOffset, min, max, clipMin, clipMax,
                 stacked, vlist, j, slen, svals, val, yoffset, yMaxCalc, canvasHeightEf;
+
             bar._super.init.call(this, el, values, options, width, height);
 
             // scan values to determine whether to stack bars
@@ -1932,20 +1945,20 @@
             this.barWidth = barWidth;
             this.barSpacing = barSpacing;
             this.totalBarWidth = barWidth + barSpacing;
-            var rawWidth = (values.length * barWidth) + ((values.length - 1) * barSpacing);
+            var rawWidth = values.length * barWidth + (values.length - 1) * barSpacing;
             this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
             this.width = rawWidth * this.xScale; 
 
             this.initTarget();
 
             if (chartRangeClip) {
-                clipMin = chartRangeMin === undefined ? -Infinity : chartRangeMin;
-                clipMax = chartRangeMax === undefined ? Infinity : chartRangeMax;
+                clipMin = chartRangeMin == null ? -Infinity : chartRangeMin;
+                clipMax = chartRangeMax == null ? Infinity : chartRangeMax;
             }
-			if (stacked) {
-				actualMin = chartRangeMin === undefined ? stackMin : Math.min(stackMin, chartRangeMin);
-				actualMax = chartRangeMax === undefined ? stackMax : Math.max(stackMax, chartRangeMax);
-			}
+            if (stacked) {
+                actualMin = chartRangeMin == null ? stackMin : Math.min(stackMin, chartRangeMin);
+                actualMax = chartRangeMax == null ? stackMax : Math.max(stackMax, chartRangeMax);
+            }
 
             numValues = [];
             stackRanges = stacked ? [] : numValues;
@@ -1957,7 +1970,6 @@
                     values[i] = svals = [];
                     stackTotals[i] = 0;
                     stackRanges[i] = stackRangesNeg[i] = 0;
-                    var stacksInThisOffset = 0;
                     for (j = 0, slen = vlist.length; j < slen; j++) {
                         val = svals[j] = chartRangeClip ? clipval(vlist[j], clipMin, clipMax) : vlist[j];
                         if (val !== null) {
@@ -1974,7 +1986,6 @@
                                 stackRanges[i] += Math.abs(val - (val < 0 ? actualMax : actualMin));
                             }
                             numValues.push(val);
-                            stacksInThisOffset++;
                         }
                     }
                 } else {
@@ -1990,17 +2001,17 @@
             this.min = min = Math.min.apply(Math, numValues);
             this.stackMax = stackMax = stacked ? Math.max.apply(Math, stackTotals) : max;
             this.stackMin = stackMin = stacked ? Math.min.apply(Math, numValues) : min;
-//            this.stackRanges = stackRanges;
+            this.stackRanges = stackRanges;
             this.stackTotals = stackTotals;
 
-            if (chartRangeMin !== undefined && (chartRangeClip || chartRangeMin < min)) {
+            if (chartRangeMin != null && (chartRangeClip || chartRangeMin < min)) {
                 min = chartRangeMin;
             }
-            if (chartRangeMax !== undefined && (chartRangeClip || chartRangeMax > max)) {
+            if (chartRangeMax != null && (chartRangeClip || chartRangeMax > max)) {
                 max = chartRangeMax;
             }
 
-            this.zeroAxis = zeroAxis = options.get('zeroAxis', true);
+            this.zeroAxis = zeroAxis = !!options.get('zeroAxis', true);
             if (min >= 0 && max >= 0 && zeroAxis) {
                 xaxisOffset = 0;
             } else if (zeroAxis === false) {
@@ -2015,7 +2026,7 @@
             if (zeroAxis) {
                 range = stacked ? stackMax : max;
             } else {
-                range = stacked ? (Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg)) : max - min;
+                range = stacked ? Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg) : max - min;
             }
             // as we plot zero/min values a single pixel line, we add a pixel to all other
             // values - Reduce the effective canvas size to suit
@@ -3191,9 +3202,13 @@
             } else {
                 this.pixelWidth = $(canvas).width();
             }
-            var ratio = window.hasOwnProperty('devicePixelRatio') ? window.devicePixelRatio : 1;
+            var devicePixelRatio = window.devicePixelRatio || 1,
+                backingStoreRatio = this.context.webkitBackingStorePixelRatio || this.context.mozBackingStorePixelRatio || this.context.msBackingStorePixelRatio || this.context.oBackingStorePixelRatio || this.context.backingStorePixelRatio || 1,
+                ratio = devicePixelRatio / backingStoreRatio;
+            console.log('devicePixelRatio / backingStoreRatio: ', ratio, devicePixelRatio, backingStoreRatio, this.pixelWidth, this.pixelHeight);
             this.pixelWidth *= ratio;
             this.pixelHeight *= ratio;
+            this.pixelScale = ratio;
         },
 
         /**
@@ -3258,17 +3273,13 @@
             }
             this.context = this.canvas.getContext('2d');
 
-            var devicePixelRatio = window.devicePixelRatio || 1,
-                backingStoreRatio = this.context.webkitBackingStorePixelRatio || this.context.mozBackingStorePixelRatio || this.context.msBackingStorePixelRatio || this.context.oBackingStorePixelRatio || this.context.backingStorePixelRatio || 1,
-                ratio = devicePixelRatio / backingStoreRatio;
-
             $.data(target, '_jqs_vcanvas', this);
             $(this.canvas).css({ display: 'inline-block', width: width, height: height, verticalAlign: 'top' });
             this._insert(this.canvas, target);
+            this.context.scale(1, 1);
             this._calculatePixelDims(width, height, this.canvas);
-            this.canvas.width = this.pixelWidth * ratio;
-            this.canvas.height = this.pixelHeight * ratio;
-            this.context.scale(ratio, ratio);
+            this.canvas.width = this.pixelWidth;
+            this.canvas.height = this.pixelHeight;
             this.interact = interact;
             this.shapes = {};
             this.shapeseq = [];
