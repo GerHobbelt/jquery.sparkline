@@ -881,10 +881,10 @@
             this.currentPageX = e.pageX;
             this.currentPageY = e.pageY;
             this.currentEl = e.target;
+            this.updateDisplay();
             if (this.tooltip) {
                 this.tooltip.updatePosition(e.pageX, e.pageY);
             }
-            this.updateDisplay();
         },
 
         updateDisplay: function () {
@@ -993,9 +993,10 @@
             this.getSize(content);
             this.tooltip.html(content)
                 .css({
-                    'width': this.width,
-                    'height': this.height,
-                    'visibility': 'visible'
+                    'width': this.tooltip.width,
+                    'height': this.tooltip.height,
+                    'visibility': 'visible',
+                    'pointer-events': 'none'
                 });
             if (this.hidden) {
                 this.hidden = false;
@@ -1459,7 +1460,7 @@
                 shapeids = this.regionShapes[currentRegion],
                 newShapes;
             // will be null if the region value was null
-            if (shapeids) {
+            if (shapeids >= 0) {
                 newShapes = this.renderRegion(currentRegion, highlight);
                 if ($.isArray(newShapes) || $.isArray(shapeids)) {
                     target.replaceWithShapes(shapeids, newShapes);
@@ -1753,8 +1754,8 @@
                             path = [];
                             paths.push(path);
                         }
-                        vertices.push(null);
                     }
+                    vertices.push(null);
                 } else {
                     if (y < this.miny) {
                         y = this.miny;
