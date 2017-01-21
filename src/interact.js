@@ -200,8 +200,8 @@
             this.getSize(content);
             this.tooltip.html(content)
                 .css({
-                    'width': this.width,
-                    'height': this.height,
+                    'width': this.tooltip.width,
+                    'height': this.tooltip.height,
                     'visibility': 'visible',
                     'pointer-events': 'none'
                 });
