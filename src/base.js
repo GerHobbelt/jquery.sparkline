@@ -96,9 +96,9 @@
                 done.push(i);
             } else if (!$(el).closest('html').length && !$.data(el, '_jqs_pending')) {
                 // element has been inserted and removed from the DOM
-                // If it was not yet inserted into the dom then the .data request
+                // If it was not yet inserted into the DOM then the .data request
                 // will return true.
-                // removing from the dom causes the data to be removed.
+                // removing from the DOM causes the data to be removed.
                 $.data(pending[i][0], '_jqs_pending', false);
                 done.push(i);
             }
@@ -250,11 +250,21 @@
                 highlightEnabled = !this.options.get('disableHighlight'),
                 newRegion;
             // CUSTOM MOD: proper hover detection considering padding as well
-            var cW = $('canvas',this.el).width() + parseInt($('canvas',this.el).css('padding-left')) + parseInt($('canvas',this.el).css('padding-right'))
+            var cW = $('canvas', this.el).width() + parseInt($('canvas', this.el).css('padding-left')) + parseInt($('canvas', this.el).css('padding-right'));
             // if (x > this.canvasWidth || y > this.canvasHeight || x < 0 || y < 0) {
             if (x > cW || y > this.canvasHeight || x < 0 || y < 0) {
                 return null;
             }
+
+            // correct for device scaling factor: we convert from logical coordinates to device *canvas* coordinates here.
+            // It's hacky, but I can't find a better place to do this now... :-(
+            var target = $.data(this.el, '_jqs_vcanvas');
+            if (target) {
+                // console.log('getRegion: ', x, y, this.pixelScale, target);
+                x *= target.pixelScale;
+                y *= target.pixelScale;
+            }
+
             newRegion = this.getRegion(el, x, y);
             if (currentRegion !== newRegion) {
                 if (currentRegion !== undefined && highlightEnabled) {
@@ -289,7 +299,8 @@
             this.changeHighlight(false);
         },
 
-        changeHighlight: function (highlight)  {},
+        changeHighlight: function (highlight) {
+        },
 
         /**
          * Fetch the HTML to display as a tooltip
@@ -330,7 +341,7 @@
                 newFields = [];
                 for (i = fields.length; i--;) {
                     fv = fields[i][showFieldsKey];
-                    if ((j = $.inArray(fv, showFields)) != -1) {
+                    if ((j = $.inArray(fv, showFields)) !== -1) {
                         newFields[j] = fields[i];
                     }
                 }
@@ -373,7 +384,8 @@
             return '';
         },
 
-        getCurrentRegionFields: function () {},
+        getCurrentRegionFields: function () {
+        },
 
         calcHighlightColor: function (color, options) {
             var highlightColor = options.get('highlightColor'),

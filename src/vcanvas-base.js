@@ -93,9 +93,13 @@
             } else {
                 this.pixelWidth = $(canvas).width();
             }
-            var ratio = window.hasOwnProperty('devicePixelRatio') ? window.devicePixelRatio : 1;
+            var devicePixelRatio = window.devicePixelRatio || 1,
+                backingStoreRatio = this.context.webkitBackingStorePixelRatio || this.context.mozBackingStorePixelRatio || this.context.msBackingStorePixelRatio || this.context.oBackingStorePixelRatio || this.context.backingStorePixelRatio || 1,
+                ratio = devicePixelRatio / backingStoreRatio;
+            console.log('devicePixelRatio / backingStoreRatio: ', ratio, devicePixelRatio, backingStoreRatio, this.pixelWidth, this.pixelHeight);
             this.pixelWidth *= ratio;
             this.pixelHeight *= ratio;
+            this.pixelScale = ratio;
         },
 
         /**
