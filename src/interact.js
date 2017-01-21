@@ -11,8 +11,8 @@
             this.over = false;
             this.displayTooltips = !options.get('disableTooltips');
             this.highlightEnabled = !options.get('disableHighlight');
-            this.touchTooltipHideEnabled  = options.get('touchTooltipHideEnabled')?true:false;
-            this.touchTooltipDuration  = options.get('touchTooltipDuration');
+            this.touchTooltipHideEnabled = !!options.get('touchTooltipHideEnabled');
+            this.touchTooltipDuration = options.get('touchTooltipDuration');
         },
 
         registerSparkline: function (sp) {
@@ -23,15 +23,16 @@
         },
 
         registerCanvas: function (canvas) {
+            var self = this;
             var $canvas = $(canvas.canvas);
             this.canvas = canvas;
             this.$canvas = $canvas;
             $canvas.mouseenter($.proxy(this.mouseenter, this));
             $canvas.mouseleave($.proxy(this.mouseleave, this));
-            if (this.touchTooltipHideEnabled){
-              $canvas.on('touchend',function(){
-                  window.setTimeout($.proxy(this.mouseleave, this),this.touchTooltipDuration?this.touchTooltipDuration:500); 
-                }.bind(this));
+            if (this.touchTooltipHideEnabled) {
+                $canvas.on('touchend', function () {
+                    window.setTimeout($.proxy(self.mouseleave, self), self.touchTooltipDuration > 0 ? self.touchTooltipDuration : 500); 
+                });
             }
             $canvas.click($.proxy(this.mouseclick, this));
         },

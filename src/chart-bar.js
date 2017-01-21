@@ -131,6 +131,7 @@
             // as we plot zero/min values a single pixel line, we add a pixel to all other
             // values - Reduce the effective canvas size to suit
             this.canvasHeightEf = (zeroAxis && min < 0) ? this.canvasHeight - 2 : this.canvasHeight - 1;
+
             if (min < xaxisOffset) {
                 yMaxCalc = (stacked && max >= 0) ? stackMax : max;
                 yoffset = (yMaxCalc - xaxisOffset) / range * this.canvasHeight;
@@ -240,18 +241,18 @@
                     minPlotted = true;
                 }
 
-                height  = 0;
+                height = 0;
                 reserve = 0;
                 // New approach.
                 if (range > 0) {
-                    if (range - reserve == 1) {
-                        height = (canvasHeightEf * (Math.abs( ( val / stackTotals[valuenum] )))) + 1;
+                    if (range - reserve === 1) {
+                        height = canvasHeightEf * Math.abs(val / stackTotals[valuenum]) + 1;
                     } else {
-                        height = ((canvasHeightEf / (range - reserve) ) * (val - xaxisOffset));
+                        height = (canvasHeightEf / (range - reserve)) * (val - xaxisOffset);
                     }
                 } else {
                     // range is 0 - all values are the same.
-                    height =  Math.ceil(canvasHeightEf / (valcount || 1) );
+                    height =  Math.ceil(canvasHeightEf / (valcount || 1));
                 }
 
                 if (val < xaxisOffset || (val === xaxisOffset && yoffset === 0)) {

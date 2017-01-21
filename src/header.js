@@ -119,6 +119,8 @@
 *   tooltipValueLookups - An object or range map to map field values to tooltip strings
 *                         (eg. to map -1 to "Lost", 0 to "Draw", and 1 to "Win")
 *   toolTipPosition - Display tooltip to the 'left' or 'right' of the mouse - Defaults to "right"
+*   touchTooltipHideEnabled - Hide tooltip on touchdevices on touchend (default: true)
+*   touchTooltipDuration - When to hide tooltip on touchdevices after touchend event, when enabled (default: 500ms)
 *   numberFormatter - Optional callback for formatting numbers in tooltips
 *   numberDigitGroupSep - Character to use for group separator in numbers "1,234" - Defaults to ","
 *   numberDecimalMark - Character to use for the decimal point when formatting numbers - Defaults to "."
