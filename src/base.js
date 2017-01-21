@@ -260,7 +260,6 @@
             // It's hacky, but I can't find a better place to do this now... :-(
             var target = $.data(this.el, '_jqs_vcanvas');
             if (target) {
-                // console.log('getRegion: ', x, y, this.pixelScale, target);
                 x *= target.pixelScale;
                 y *= target.pixelScale;
             }

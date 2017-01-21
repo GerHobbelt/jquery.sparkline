@@ -1328,11 +1328,9 @@
             }
 
             // correct for device scaling factor: we convert from logical coordinates to device *canvas* coordinates here.
-            // It's hacky, but I can't find a better place to do this now; the alternative is to patch the getRegion() implementation
-            // for every chart... :-(
+            // It's hacky, but I can't find a better place to do this now... :-(
             var target = $.data(this.el, '_jqs_vcanvas');
             if (target) {
-                console.log('getRegion: ', x, y, this.pixelScale, target);
                 x *= target.pixelScale;
                 y *= target.pixelScale;
             }
@@ -3205,7 +3203,7 @@
             var devicePixelRatio = window.devicePixelRatio || 1,
                 backingStoreRatio = this.context.webkitBackingStorePixelRatio || this.context.mozBackingStorePixelRatio || this.context.msBackingStorePixelRatio || this.context.oBackingStorePixelRatio || this.context.backingStorePixelRatio || 1,
                 ratio = devicePixelRatio / backingStoreRatio;
-            console.log('devicePixelRatio / backingStoreRatio: ', ratio, devicePixelRatio, backingStoreRatio, this.pixelWidth, this.pixelHeight);
+
             this.pixelWidth *= ratio;
             this.pixelHeight *= ratio;
             this.pixelScale = ratio;
