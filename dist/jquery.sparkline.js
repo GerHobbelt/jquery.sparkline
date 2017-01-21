@@ -56,7 +56,7 @@
 *
 * Values can also be specified in an HTML comment, or as a values attribute:
 *    <p>Sparkline: <span class="sparkline"><!--1,4,6,6,8,5,3,5 --></span></p>
-*    <p>Sparkline: <span class="sparkline" values="1,4,6,6,8,5,3,5"></span></p>
+*    <p>Sparkline: <span class="sparkline" data-values="1,4,6,6,8,5,3,5"></span></p>
 *    $('.sparkline').sparkline();
 *
 * For line charts, x values can also be specified:
@@ -69,8 +69,8 @@
 * Options can also be set by passing them on the tag itself.  This feature is disabled by default though
 * as there's a slight performance overhead:
 *   $('.sparkline').sparkline([1,2,3,4], {enableTagOptions: true})
-*   <p>Sparkline: <span class="sparkline" sparkType="bar" sparkBarColor="red">loading</span></p>
-* Prefix all options supplied as tag attribute with "spark" (configurable by setting tagOptionsPrefix)
+*   <p>Sparkline: <span class="sparkline" data-spark-Type="bar" data-spark-BarColor="red">loading</span></p>
+* Prefix all options supplied as tag attribute with "data-spark-" (configurable by setting tagOptionsPrefix)
 *
 * Supported options:
 *   lineColor - Color of the line used for the chart
@@ -85,9 +85,9 @@
 *   composite - If true then don't erase any existing chart attached to the tag, but draw
 *           another chart over the top - Note that width and height are ignored if an
 *           existing chart is detected.
-*   tagValuesAttribute - Name of tag attribute to check for data values - Defaults to 'values'
-*   enableTagOptions - Whether to check tags for sparkline options
-*   tagOptionsPrefix - Prefix used for options supplied as tag attributes - Defaults to 'spark'
+*   tagValuesAttribute - Name of tag attribute to check for data values - Defaults to 'data-values'
+*   enableTagOptions - Whether to check tags for sparkline options - Defaults = true
+*   tagOptionsPrefix - Prefix used for options supplied as tag attributes - Defaults to 'data-spark-'
 *   disableHiddenCheck - If set to true, then the plugin will assume that charts will never be drawn into a
 *           hidden dom element, avoiding a browser reflow
 *   disableInteraction - If set to true then all mouseover/click interaction behaviour will be disabled,
@@ -252,9 +252,9 @@
                 width: 'auto',
                 height: 'auto',
                 composite: false,
-                tagValuesAttribute: 'values',
-                tagOptionsPrefix: 'spark',
-                enableTagOptions: false,
+                tagValuesAttribute: 'data-values',
+                tagOptionsPrefix: 'data-spark-',
+                enableTagOptions: true,
                 enableHighlight: true,
                 highlightLighten: 1.4,
                 tooltipSkipNull: true,
@@ -915,7 +915,8 @@
                  tooltiphtml, sp, i, result, changeEvent;
             // localX/localY fix issue #50 with Google Chrome
             // and subpixel rendering
-
+            localX = Math.max(0, localX);
+            localY = Math.max(0, localY);
             if (!this.over) {
                 return;
             }
@@ -1191,7 +1192,7 @@
             this.tagValCache = {};
             defaults = $.fn.sparkline.defaults;
             base = defaults.common;
-            this.tagOptionsPrefix = userOptions.enableTagOptions && (userOptions.tagOptionsPrefix || base.tagOptionsPrefix);
+            this.tagOptionsPrefix = (userOptions.enableTagOptions || base.enableTagOptions) && (userOptions.tagOptionsPrefix || base.tagOptionsPrefix);
 
             tagOptionType = this.getTagSetting('type');
             if (tagOptionType === UNSET_OPTION) {
@@ -2667,6 +2668,7 @@
                 options = this.options,
                 radius = this.radius,
                 borderWidth = options.get('borderWidth'),
+                donutWidth = options.get('donutWidth'),
                 shape, i;
 
             if (!pie._super.render.call(this)) {
@@ -2682,6 +2684,10 @@
                     this.valueShapes[i] = shape.id; // store just the shapeid
                     this.shapes[shape.id] = i;
                 }
+            }
+            if (donutWidth) {
+                target.drawCircle(radius, radius, radius - donutWidth, options.get('donutColor'), 
+                    options.get('donutColor'), 0).append();
             }
             target.render();
         }
