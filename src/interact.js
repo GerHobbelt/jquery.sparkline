@@ -202,7 +202,8 @@
                 .css({
                     'width': this.width,
                     'height': this.height,
-                    'visibility': 'visible'
+                    'visibility': 'visible',
+                    'pointer-events': 'none'
                 });
             if (this.hidden) {
                 this.hidden = false;
