@@ -119,6 +119,8 @@
 *   tooltipValueLookups - An object or range map to map field values to tooltip strings
 *                         (eg. to map -1 to "Lost", 0 to "Draw", and 1 to "Win")
 *   toolTipPosition - Display tooltip to the 'left' or 'right' of the mouse - Defaults to "right"
+*   touchTooltipHideEnabled - Hide tooltip on touchdevices on touchend (default: true)
+*   touchTooltipDuration - When to hide tooltip on touchdevices after touchend event, when enabled (default: 500ms)
 *   numberFormatter - Optional callback for formatting numbers in tooltips
 *   numberDigitGroupSep - Character to use for group separator in numbers "1,234" - Defaults to ","
 *   numberDecimalMark - Character to use for the decimal point when formatting numbers - Defaults to "."
@@ -126,6 +128,7 @@
 *
 * There are 8 types of sparkline, selected by supplying a "type" option of 'line' (default),
 * 'bar', 'tristate', 'bullet', 'discrete', 'pie', 'box' or 'stack'
+*
 *    line - Line chart.  Options:
 *       spotColor - Set to '' to not end each line in a circular spot
 *       minSpotColor - If set, color of spot at minimum value
@@ -173,6 +176,7 @@
 *       options:
 *       targetColor - The color of the vertical target marker
 *       targetWidth - The width of the target marker in pixels
+*       targetVerticalPadding - The top and bottom padding of the target marker in pixels
 *       performanceColor - The color of the performance measure horizontal bar
 *       rangeColors - Colors to use for each qualitative range background color
 *
@@ -181,6 +185,7 @@
 *       offset - Angle in degrees to offset the first slice - Try -90 or +90
 *       borderWidth - Width of border to draw around the pie chart, in pixels - Defaults to 0 (no border)
 *       borderColor - Color to use for the pie chart border - Defaults to #000
+*
 *   stack - Horizontal stack chart. Options:
 *       sliceColors - An array of colors to use for pie slices
 *
@@ -255,6 +260,8 @@
                 tooltipSkipNull: true,
                 tooltipPrefix: '',
                 tooltipSuffix: '',
+                touchTooltipHideEnabled: true,
+		touchTooltipDuration: 500,
                 disableHiddenCheck: false,
                 numberFormatter: false,
                 numberDigitGroupCount: 3,
@@ -345,11 +352,14 @@
             bullet: {
                 targetColor: '#f33',
                 targetWidth: 3, // width of the target bar in pixels
+                targetVerticalPadding: null,
                 performanceColor: '#33f',
                 rangeColors: ['#d3dafe', '#a8b6ff', '#7f94ff'],
                 base: undefined, // set this to a number to change the base start number
                 tooltipFormat: new SPFormat('{{fieldkey:fields}} - {{value}}'),
-                tooltipValueLookups: { fields: {r: 'Range', p: 'Performance', t: 'Target'} }
+                tooltipValueLookups: { fields: {r: 'Range', p: 'Performance', t: 'Target'} },
+                chartRangeMax: undefined,
+                chartRangeMin: undefined,
             },
             // Defaults for pie charts
             pie: {
@@ -804,6 +814,8 @@
             this.over = false;
             this.displayTooltips = !options.get('disableTooltips');
             this.highlightEnabled = !options.get('disableHighlight');
+            this.touchTooltipHideEnabled = !!options.get('touchTooltipHideEnabled');
+            this.touchTooltipDuration = options.get('touchTooltipDuration');
         },
 
         registerSparkline: function (sp) {
@@ -814,11 +826,17 @@
         },
 
         registerCanvas: function (canvas) {
+            var self = this;
             var $canvas = $(canvas.canvas);
             this.canvas = canvas;
             this.$canvas = $canvas;
             $canvas.mouseenter($.proxy(this.mouseenter, this));
             $canvas.mouseleave($.proxy(this.mouseleave, this));
+            if (this.touchTooltipHideEnabled) {
+                $canvas.on('touchend', function () {
+                    window.setTimeout($.proxy(self.mouseleave, self), self.touchTooltipDuration > 0 ? self.touchTooltipDuration : 500); 
+                });
+            }
             $canvas.click($.proxy(this.mouseclick, this));
         },
 
@@ -1938,6 +1956,7 @@
                     values[i] = svals = [];
                     stackTotals[i] = 0;
                     stackRanges[i] = stackRangesNeg[i] = 0;
+                    var stacksInThisOffset = 0;
                     for (j = 0, slen = vlist.length; j < slen; j++) {
                         val = svals[j] = chartRangeClip ? clipval(vlist[j], clipMin, clipMax) : vlist[j];
                         if (val !== null) {
@@ -1954,6 +1973,7 @@
                                 stackRanges[i] += Math.abs(val - (val < 0 ? actualMax : actualMin));
                             }
                             numValues.push(val);
+                            stacksInThisOffset++;
                         }
                     }
                 } else {
@@ -1964,10 +1984,13 @@
                     }
                 }
             }
+
             this.max = max = Math.max.apply(Math, numValues);
             this.min = min = Math.min.apply(Math, numValues);
             this.stackMax = stackMax = stacked ? Math.max.apply(Math, stackTotals) : max;
             this.stackMin = stackMin = stacked ? Math.min.apply(Math, numValues) : min;
+//            this.stackRanges = stackRanges;
+            this.stackTotals = stackTotals;
 
             if (chartRangeMin !== undefined && (chartRangeClip || chartRangeMin < min)) {
                 min = chartRangeMin;
@@ -1977,7 +2000,7 @@
             }
 
             this.zeroAxis = zeroAxis = options.get('zeroAxis', true);
-            if (min <= 0 && max >= 0 && zeroAxis) {
+            if (min >= 0 && max >= 0 && zeroAxis) {
                 xaxisOffset = 0;
             } else if (zeroAxis === false) {
                 xaxisOffset = min;
@@ -1988,8 +2011,11 @@
             }
             this.xaxisOffset = xaxisOffset;
 
-            range = stacked ? (Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg)) : max - min;
-
+            if (zeroAxis) {
+                range = stacked ? stackMax : max;
+            } else {
+                range = stacked ? (Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg)) : max - min;
+            }
             // as we plot zero/min values a single pixel line, we add a pixel to all other
             // values - Reduce the effective canvas size to suit
             this.canvasHeightEf = (zeroAxis && min < 0) ? this.canvasHeight - 2 : this.canvasHeight - 1;
@@ -2068,7 +2094,9 @@
                 x = valuenum * this.totalBarWidth,
                 canvasHeightEf = this.canvasHeightEf,
                 yoffset = this.yoffset,
-                y, height, color, isNull, yoffsetNeg, i, valcount, val, minPlotted, allMin;
+                stackTotals = this.stackTotals,
+                stackRanges = this.stackRanges,
+                y, height, color, isNull, yoffsetNeg, i, valcount, val, minPlotted, allMin, reserve;
 
             vals = $.isArray(vals) ? vals : [vals];
             valcount = vals.length;
@@ -2089,18 +2117,32 @@
             for (i = 0; i < valcount; i++) {
                 val = vals[i];
 
-                if (stacked && val === xaxisOffset) {
-                    if (!allMin || minPlotted) {
-                        continue;
-                    }
+                if (val < this.stackMin && range > 1) { 
+                    continue; 
+                }           
+
+                if (allMin && minPlotted) {
+                    continue;
+                }
+
+                if (stacked && val === stackTotals[valuenum]) {
                     minPlotted = true;
                 }
 
+                height = 0;
+                reserve = 0;
+                // New approach.
                 if (range > 0) {
-                    height = Math.floor(canvasHeightEf * ((Math.abs(val - xaxisOffset) / range))) + 1;
+                    if (range - reserve === 1) {
+                        height = canvasHeightEf * Math.abs(val / stackTotals[valuenum]) + 1;
+                    } else {
+                        height = (canvasHeightEf / (range - reserve)) * (val - xaxisOffset);
+                    }
                 } else {
-                    height = 1;
+                    // range is 0 - all values are the same.
+                    height =  Math.ceil(canvasHeightEf / (valcount || 1));
                 }
+
                 if (val < xaxisOffset || (val === xaxisOffset && yoffset === 0)) {
                     y = yoffsetNeg;
                     yoffsetNeg += height;
@@ -2112,7 +2154,7 @@
                 if (highlight) {
                     color = this.calcHighlightColor(color, options);
                 }
-                result.push(target.drawRect(x * this.xScale, y, (this.barWidth - 1) * this.xScale, height - 1, color, color));
+                result.push(target.drawRect(x * this.xScale, y, (this.barWidth - 1) * this.xScale, height, color, color));
             }
             if (result.length === 1) {
                 return result[0];
@@ -2396,8 +2438,8 @@
             vals = values.slice();
             vals[0] = vals[0] === null ? vals[2] : vals[0];
             vals[1] = values[1] === null ? vals[2] : vals[1];
-            min = Math.min.apply(Math, values);
-            max = Math.max.apply(Math, values);
+            min = options.get('chartRangeMin') == null ? Math.min.apply(Math, values) : options.get('chartRangeMin');
+            max = options.get('chartRangeMax') == null ? Math.max.apply(Math, values) : options.get('chartRangeMax');
             if (options.get('base') === undefined) {
                 min = min < 0 ? min : 0;
             } else {
@@ -2406,20 +2448,20 @@
             this.min = min;
             this.max = max;
             this.range = max - min;
-			
-			// GRADIENT
-			var colors = options.get('rangeColors');
-			if (options.get('gradient') && colors.length > 1) {
-				var rainbow = new Rainbow();
-				rainbow.setSpectrumByArray(colors);
-				rainbow.setNumberRange(0, this.values.length);
-				
-				for (var i = 0; i < this.values.length; i++) {
-					colors[i] = rainbow.colorAt(i);
-				}
-			}
-			
-			this.rangeColors = colors;
+            
+            // GRADIENT
+            var colors = options.get('rangeColors');
+            if (options.get('gradient') && colors.length > 1) {
+                var rainbow = new Rainbow();
+                rainbow.setSpectrumByArray(colors);
+                rainbow.setNumberRange(0, this.values.length);
+                
+                for (var i = 0; i < this.values.length; i++) {
+                    colors[i] = rainbow.colorAt(i);
+                }
+            }
+            
+            this.rangeColors = colors;
             this.shapes = {};
             this.valueShapes = {};
             this.regiondata = {};
@@ -2490,12 +2532,19 @@
         renderTarget: function (highlight) {
             var targetval = this.values[0],
                 x = Math.round(this.canvasWidth * ((targetval - this.min) / this.range) - (this.options.get('targetWidth') / 2)),
-                targettop = Math.round(this.canvasHeight * 0.10),
-                targetheight = this.canvasHeight - (targettop * 2),
                 color = this.options.get('targetColor');
             if (highlight) {
                 color = this.calcHighlightColor(color, this.options);
             }
+    
+            var targettop = Math.round(this.canvasHeight * 0.10);
+
+            if (this.options.get('targetVerticalPadding') != null) {
+                targettop = this.options.get('targetVerticalPadding');
+            }
+
+            var targetheight = this.canvasHeight - (targettop * 2);
+
             return this.target.drawRect(x, targettop, this.options.get('targetWidth') - 1, targetheight - 1, color, color);
         },
 
