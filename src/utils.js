@@ -222,3 +222,11 @@
         }
     };
 
+    getDevicePixelRatio = function() {
+      if (window.devicePixelRatio) return window.devicePixelRatio;
+      if (window.matchMedia) {
+        const mediaStr = '(min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 1.5),(-moz-min-device-pixel-ratio: 1.5),(min-device-pixel-ratio: 1.5)';
+        return window.matchMedia(mediaStr).matches ? 2 : 1;
+      }
+      return 1;
+    };
