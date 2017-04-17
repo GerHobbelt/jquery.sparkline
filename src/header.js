@@ -182,6 +182,9 @@
 *       borderWidth - Width of border to draw around the pie chart, in pixels - Defaults to 0 (no border)
 *       borderColor - Color to use for the pie chart border - Defaults to #000
 *
+*   stack - Horizontal stack chart. Options:
+*       sliceColors - An array of colors to use for pie slices
+*
 *   box - Box plot. Options:
 *       raw - Set to true to supply pre-computed plot points as values
 *             values should be: low_outlier, low_whisker, q1, median, q3, high_whisker, high_outlier
@@ -227,6 +230,6 @@
         getDefaults, createClass, SPFormat, clipval, median, quartile, normalizeValue, normalizeValues,
         remove, isNumber, all, sum, addCSS, ensureArray, formatNumber, RangeMap,
         MouseHandler, Tooltip, barHighlightMixin,
-        line, bar, tristate, discrete, bullet, pie, box, timeline, defaultStyles, initStyles,
+        line, bar, tristate, discrete, bullet, pie, stack, box, timeline, defaultStyles, initStyles,
         VShape, VCanvas_base, VCanvas_canvas, VCanvas_vml, pending, shapeCount = 0;
 
