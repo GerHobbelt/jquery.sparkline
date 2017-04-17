@@ -41,31 +41,34 @@
         // CUSTOM MOD: radius added
         _drawShape: function (shapeid, path, lineColor, fillColor, lineWidth, radius) {
             var context = this._getContext(lineColor, fillColor, lineWidth),
-                i, plen;
+                i, plen, done = false;
             if (!radius)
               radius = 0;
             context.beginPath();
-            // CUSTOM MOD: corner radius drawing added
-            if (path.length > 2) {
-              if ((path[1][0] - path[0][0]) < radius)
-                radius = 0
-              // this is a rectangle
-              context.moveTo(path[0][0] + radius + 0.5, path[0][1] + 0.5);
+            // CUSTOM MOD: corner radius drawing added for rectangles
+            if (path.length === 5) {
+                if ((path[1][0] - path[0][0]) < radius)
+                    radius = 0;
+                // this is a rectangle
+                if (radius > 0) {
+                    context.moveTo(path[0][0] + radius + 0.5, path[0][1] + 0.5);
 
-              context.lineTo(path[1][0] - radius + 0.5, path[1][1] + 0.5);
-              context.quadraticCurveTo(path[2][0], path[1][1], path[2][0], path[1][1] + radius);
+                    context.lineTo(path[1][0] - radius + 0.5, path[1][1] + 0.5);
+                    context.quadraticCurveTo(path[1][0] - radius + 0.5, path[1][1] + 0.5, path[1][0] + 0.5, path[1][1] + radius + 0.5);
 
-              context.lineTo(path[2][0], path[2][1] + 0.5 - radius);
-              context.quadraticCurveTo(path[2][0], path[3][1], path[2][0] - radius, path[3][1]);
+                    context.lineTo(path[2][0] + 0.5, path[2][1] - radius + 0.5);
+                    context.quadraticCurveTo(path[2][0] + 0.5, path[2][1] - radius + 0.5, path[2][0] - radius + 0.5, path[2][1] + 0.5);
 
-              context.lineTo(path[3][0] + 0.5 + radius, path[3][1]);
-              context.quadraticCurveTo(path[3][0], path[3][1], path[3][0], path[3][1] - radius);
+                    context.lineTo(path[3][0] + radius + 0.5, path[3][1] + 0.5);
+                    context.quadraticCurveTo(path[3][0] + radius + 0.5, path[3][1] + 0.5, path[3][0] + 0.5, path[3][1] - radius + 0.5);
 
-              context.lineTo(path[3][0] , path[4][1] + radius);
-              context.quadraticCurveTo(path[0][0], path[0][1] + 0.5, path[0][0] + radius, path[0][1] + 0.5);
-            }
-            else
-            {
+                    context.lineTo(path[4][0] + 0.5, path[4][1] + radius + 0.5);
+                    context.quadraticCurveTo(path[4][0] + 0.5, path[4][1] + radius + 0.5, path[4][0] + radius + 0.5, path[4][1] + 0.5);
+
+                    done = true;
+                }
+            } 
+            if (!done) {
               context.moveTo(path[0][0] + 0.5, path[0][1] + 0.5);
               for (i = 1, plen = path.length; i < plen; i++) {
                   context.lineTo(path[i][0] + 0.5, path[i][1] + 0.5); // the 0.5 offset gives us crisp pixel-width lines
