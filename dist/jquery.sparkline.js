@@ -1143,20 +1143,7 @@
                     mhandler.registerSparkline(sp);
                 }
             };
-            if (($(this).html() && !options.get('disableHiddenCheck') && $(this).is(':hidden')) || !$(this).parents('body').length) {
-                if (!options.get('composite') && $.data(this, '_jqs_pending')) {
-                    // remove any existing references to the element
-                    for (i = pending.length; i; i--) {
-                        if (pending[i - 1][0] == this) {
-                            pending.splice(i - 1, 1);
-                        }
-                    }
-                }
-                pending.push([this, render]);
-                $.data(this, '_jqs_pending', true);
-            } else {
-                render.call(this);
-            }
+            render.call(this);
         });
     };
 
@@ -1208,7 +1195,6 @@
             }
             this.mergedOptions = $.extend({}, base, extendedOptions, userOptions);
         },
-
 
         getTagSetting: function (key) {
             var prefix = this.tagOptionsPrefix,
@@ -1702,8 +1688,9 @@
             var normalRangeMin = this.options.get('normalRangeMin'),
                 normalRangeMax = this.options.get('normalRangeMax'),
                 ytop = canvasTop + Math.round(canvasHeight - (canvasHeight * ((normalRangeMax - this.miny) / rangey))),
-                height = Math.round((canvasHeight * (normalRangeMax - normalRangeMin)) / rangey);
-            this.target.drawRect(canvasLeft, ytop, canvasWidth, height, undefined, this.options.get('normalRangeColor')).append();
+                height = Math.round((canvasHeight * (normalRangeMax - normalRangeMin)) / rangey),
+                color = this.options.get('normalRangeColor');
+            this.target.drawRect(canvasLeft, ytop, canvasWidth, height, color, color).append();
         },
 
         render: function () {
@@ -1729,11 +1716,6 @@
 
             xvalues = this.xvalues;
             yvalues = this.yvalues;
-
-            if (!this.yminmax.length || this.yvalues.length < 2) {
-                // empty or all null valuess
-                return;
-            }
 
             canvasTop = canvasLeft = 0;
 
@@ -1766,8 +1748,12 @@
                 }
             }
 
-
             canvasHeight--;
+
+            if (options.get('backgroundColor') !== undefined) {
+                var backgroundColor = options.get('backgroundColor')
+                this.target.drawRect(canvasLeft, canvasTop, canvasWidth, canvasHeight, backgroundColor, backgroundColor).append();
+            }
 
             if (options.get('normalRangeMin') !== undefined && !options.get('drawNormalOnTop')) {
                 this.drawNormalRange(canvasLeft, canvasTop, canvasHeight, canvasWidth, rangey);
