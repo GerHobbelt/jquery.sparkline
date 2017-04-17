@@ -56,7 +56,7 @@
 *
 * Values can also be specified in an HTML comment, or as a values attribute:
 *    <p>Sparkline: <span class="sparkline"><!--1,4,6,6,8,5,3,5 --></span></p>
-*    <p>Sparkline: <span class="sparkline" values="1,4,6,6,8,5,3,5"></span></p>
+*    <p>Sparkline: <span class="sparkline" data-values="1,4,6,6,8,5,3,5"></span></p>
 *    $('.sparkline').sparkline();
 *
 * For line charts, x values can also be specified:
@@ -69,8 +69,8 @@
 * Options can also be set by passing them on the tag itself.  This feature is disabled by default though
 * as there's a slight performance overhead:
 *   $('.sparkline').sparkline([1,2,3,4], {enableTagOptions: true})
-*   <p>Sparkline: <span class="sparkline" sparkType="bar" sparkBarColor="red">loading</span></p>
-* Prefix all options supplied as tag attribute with "spark" (configurable by setting tagOptionsPrefix)
+*   <p>Sparkline: <span class="sparkline" data-spark-Type="bar" data-spark-BarColor="red">loading</span></p>
+* Prefix all options supplied as tag attribute with "data-spark-" (configurable by setting tagOptionsPrefix)
 *
 * Supported options:
 *   lineColor - Color of the line used for the chart
@@ -85,26 +85,26 @@
 *   composite - If true then don't erase any existing chart attached to the tag, but draw
 *           another chart over the top - Note that width and height are ignored if an
 *           existing chart is detected.
-*   tagValuesAttribute - Name of tag attribute to check for data values - Defaults to 'values'
-*   enableTagOptions - Whether to check tags for sparkline options
-*   tagOptionsPrefix - Prefix used for options supplied as tag attributes - Defaults to 'spark'
+*   tagValuesAttribute - Name of tag attribute to check for data values - Defaults to 'data-values'
+*   enableTagOptions - Whether to check tags for sparkline options - Defaults = true
+*   tagOptionsPrefix - Prefix used for options supplied as tag attributes - Defaults to 'data-spark-'
 *   disableHiddenCheck - If set to true, then the plugin will assume that charts will never be drawn into a
-*           hidden dom element, avoding a browser reflow
+*           hidden dom element, avoiding a browser reflow
 *   disableInteraction - If set to true then all mouseover/click interaction behaviour will be disabled,
 *       making the plugin perform much like it did in 1.x
 *   disableTooltips - If set to true then tooltips will be disabled - Defaults to false (tooltips enabled)
 *   disableHighlight - If set to true then highlighting of selected chart elements on mouseover will be disabled
-*       defaults to false (highlights enabled)
+*           defaults to false (highlights enabled)
 *   highlightLighten - Factor to lighten/darken highlighted chart values by - Defaults to 1.4 for a 40% increase
 *   tooltipContainer - Specify which DOM element the tooltip should be rendered into - defaults to document.body
 *   tooltipClassname - Optional CSS classname to apply to tooltips - If not specified then a default style will be applied
 *   tooltipOffsetX - How many pixels away from the mouse pointer to render the tooltip on the X axis
 *   tooltipOffsetY - How many pixels away from the mouse pointer to render the tooltip on the r axis
 *   tooltipFormatter  - Optional callback that allows you to override the HTML displayed in the tooltip
-*       callback is given arguments of (sparkline, options, fields)
+*           callback is given arguments of (sparkline, options, fields)
 *   tooltipChartTitle - If specified then the tooltip uses the string specified by this setting as a title
 *   tooltipFormat - A format string or SPFormat object  (or an array thereof for multiple entries)
-*       to control the format of the tooltip
+*           to control the format of the tooltip
 *   tooltipPrefix - A string to prepend to each field displayed in a tooltip
 *   tooltipSuffix - A string to append to each field displayed in a tooltip
 *   tooltipPrefixBinLabels - An array of Bin Labels for each offset value to add as the start
@@ -117,8 +117,10 @@
 *                            of the tooltip suffix.
 *   tooltipSkipNull - If true then null values will not have a tooltip displayed (defaults to true)
 *   tooltipValueLookups - An object or range map to map field values to tooltip strings
-*       (eg. to map -1 to "Lost", 0 to "Draw", and 1 to "Win")
+*                         (eg. to map -1 to "Lost", 0 to "Draw", and 1 to "Win")
 *   toolTipPosition - Display tooltip to the 'left' or 'right' of the mouse - Defaults to "right"
+*   touchTooltipHideEnabled - Hide tooltip on touchdevices on touchend (default: true)
+*   touchTooltipDuration - When to hide tooltip on touchdevices after touchend event, when enabled (default: 500ms)
 *   numberFormatter - Optional callback for formatting numbers in tooltips
 *   numberDigitGroupSep - Character to use for group separator in numbers "1,234" - Defaults to ","
 *   numberDecimalMark - Character to use for the decimal point when formatting numbers - Defaults to "."
@@ -174,6 +176,7 @@
 *       options:
 *       targetColor - The color of the vertical target marker
 *       targetWidth - The width of the target marker in pixels
+*       targetVerticalPadding - The top and bottom padding of the target marker in pixels
 *       performanceColor - The color of the performance measure horizontal bar
 *       rangeColors - Colors to use for each qualitative range background color
 *
@@ -229,7 +232,7 @@
     // CUSTOM MOD: median var added
     var UNSET_OPTION = {},
         getDefaults, createClass, SPFormat, clipval, median, quartile, normalizeValue, normalizeValues,
-        remove, isNumber, all, sum, addCSS, ensureArray, formatNumber, RangeMap,
+        remove, isNumber, all, sum, addCSS, getDevicePixelRatio, ensureArray, formatNumber, RangeMap,
         MouseHandler, Tooltip, barHighlightMixin,
         line, bar, tristate, discrete, bullet, pie, stack, box, timeline, defaultStyles, initStyles,
         VShape, VCanvas_base, VCanvas_canvas, VCanvas_vml, pending, shapeCount = 0;
@@ -249,14 +252,16 @@
                 width: 'auto',
                 height: 'auto',
                 composite: false,
-                tagValuesAttribute: 'values',
-                tagOptionsPrefix: 'spark',
-                enableTagOptions: false,
+                tagValuesAttribute: 'data-values',
+                tagOptionsPrefix: 'data-spark-',
+                enableTagOptions: true,
                 enableHighlight: true,
                 highlightLighten: 1.4,
                 tooltipSkipNull: true,
                 tooltipPrefix: '',
                 tooltipSuffix: '',
+                touchTooltipHideEnabled: true,
+                touchTooltipDuration: 500,
                 disableHiddenCheck: false,
                 numberFormatter: false,
                 numberDigitGroupCount: 3,
@@ -347,11 +352,14 @@
             bullet: {
                 targetColor: '#f33',
                 targetWidth: 3, // width of the target bar in pixels
+                targetVerticalPadding: null,
                 performanceColor: '#33f',
                 rangeColors: ['#d3dafe', '#a8b6ff', '#7f94ff'],
                 base: undefined, // set this to a number to change the base start number
                 tooltipFormat: new SPFormat('{{fieldkey:fields}} - {{value}}'),
-                tooltipValueLookups: { fields: {r: 'Range', p: 'Performance', t: 'Target'} }
+                tooltipValueLookups: { fields: {r: 'Range', p: 'Performance', t: 'Target'} },
+                chartRangeMax: undefined,
+                chartRangeMin: undefined,
             },
             // Defaults for pie charts
             pie: {
@@ -396,6 +404,11 @@
         };
     };
 
+    // Bootstrap adds box-sizing that messes with alignment in the tooltip.
+    var box_sizing = '-webkit-box-sizing: content-box !important;' +
+          '-moz-box-sizing: content-box !important;' +
+          'box-sizing: content-box !important;';
+
     // You can have tooltips use a css class other than jqstooltip by specifying tooltipClassname
     defaultStyles = '.jqstooltip { ' +
             'position: absolute;' +
@@ -412,15 +425,17 @@
             'white-space: nowrap;' +
             'padding: 5px;' +
             'border: 1px solid white;' +
-            'box-sizing: content-box;' +
             'z-index: 10000;' +
+            box_sizing +
             '}' +
             '.jqsfield { ' +
             'color: white;' +
             'font: 10px arial, san serif;' +
             'text-align: left;' +
+            '}' +
+            '.jqstooltip:before, .jqstooltip:after { ' +
+            box_sizing +
             '}';
-
 
     /**
      * Utilities
@@ -690,7 +705,14 @@
         }
     };
 
-
+    getDevicePixelRatio = function() {
+      if (window.devicePixelRatio) return window.devicePixelRatio;
+      if (window.matchMedia) {
+        const mediaStr = '(min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 1.5),(-moz-min-device-pixel-ratio: 1.5),(min-device-pixel-ratio: 1.5)';
+        return window.matchMedia(mediaStr).matches ? 2 : 1;
+      }
+      return 1;
+    };
     // Provide a cross-browser interface to a few simple drawing primitives
     $.fn.simpledraw = function (width, height, useExisting, interact) {
         var target, mhandler;
@@ -799,6 +821,8 @@
             this.over = false;
             this.displayTooltips = !options.get('disableTooltips');
             this.highlightEnabled = !options.get('disableHighlight');
+            this.touchTooltipHideEnabled = !!options.get('touchTooltipHideEnabled');
+            this.touchTooltipDuration = options.get('touchTooltipDuration');
         },
 
         registerSparkline: function (sp) {
@@ -809,11 +833,17 @@
         },
 
         registerCanvas: function (canvas) {
+            var self = this;
             var $canvas = $(canvas.canvas);
             this.canvas = canvas;
             this.$canvas = $canvas;
             $canvas.mouseenter($.proxy(this.mouseenter, this));
             $canvas.mouseleave($.proxy(this.mouseleave, this));
+            if (this.touchTooltipHideEnabled) {
+                $canvas.on('touchend', function () {
+                    window.setTimeout($.proxy(self.mouseleave, self), self.touchTooltipDuration > 0 ? self.touchTooltipDuration : 500); 
+                });
+            }
             $canvas.click($.proxy(this.mouseclick, this));
         },
 
@@ -876,10 +906,10 @@
             this.currentPageX = e.pageX;
             this.currentPageY = e.pageY;
             this.currentEl = e.target;
+            this.updateDisplay();
             if (this.tooltip) {
                 this.tooltip.updatePosition(e.pageX, e.pageY);
             }
-            this.updateDisplay();
         },
 
         updateDisplay: function () {
@@ -988,9 +1018,10 @@
             this.getSize(content);
             this.tooltip.html(content)
                 .css({
-                    'width': this.width,
-                    'height': this.height,
-                    'visibility': 'visible'
+                    'width': this.tooltip.width,
+                    'height': this.tooltip.height,
+                    'visibility': 'visible',
+                    'pointer-events': 'none'
                 });
             if (this.hidden) {
                 this.hidden = false;
@@ -1111,20 +1142,7 @@
                     mhandler.registerSparkline(sp);
                 }
             };
-            if (($(this).html() && !options.get('disableHiddenCheck') && $(this).is(':hidden')) || !$(this).parents('body').length) {
-                if (!options.get('composite') && $.data(this, '_jqs_pending')) {
-                    // remove any existing references to the element
-                    for (i = pending.length; i; i--) {
-                        if (pending[i - 1][0] == this) {
-                            pending.splice(i - 1, 1);
-                        }
-                    }
-                }
-                pending.push([this, render]);
-                $.data(this, '_jqs_pending', true);
-            } else {
-                render.call(this);
-            }
+            render.call(this);
         });
     };
 
@@ -1166,7 +1184,7 @@
             this.tagValCache = {};
             defaults = $.fn.sparkline.defaults;
             base = defaults.common;
-            this.tagOptionsPrefix = userOptions.enableTagOptions && (userOptions.tagOptionsPrefix || base.tagOptionsPrefix);
+            this.tagOptionsPrefix = (userOptions.enableTagOptions || base.enableTagOptions) && (userOptions.tagOptionsPrefix || base.tagOptionsPrefix);
 
             tagOptionType = this.getTagSetting('type');
             if (tagOptionType === UNSET_OPTION) {
@@ -1247,6 +1265,30 @@
         },
 
         /**
+         * Setup colorMap from options
+         */
+        initColorMap: function() {
+            var colorMap = this.options.get('colorMap');
+            if ($.isFunction(colorMap)) {
+                this.colorMapFunction = colorMap;
+            } else if ($.isArray(colorMap)) {
+                this.colorMapFunction = function(sparkline, options, index, value) {
+                    if (index < colorMap.length) {
+                        return colorMap[index];
+                    }
+                    // else undefined
+                };
+            } else if (colorMap) {
+                if (colorMap.get === undefined) {
+                    colorMap = new RangeMap(colorMap); 
+                }
+                this.colorMapFunction = function(sparkline, options, index, value) {
+                    return colorMap.get(value);
+                };
+            }
+        },
+
+        /**
          * Actually render the chart to the canvas
          */
         render: function () {
@@ -1271,7 +1313,9 @@
                 highlightEnabled = !this.options.get('disableHighlight'),
                 newRegion;
             // CUSTOM MOD: proper hover detection considering padding as well
-            var cW = $('canvas',this.el).width() + parseInt($('canvas',this.el).css('padding-left')) + parseInt($('canvas',this.el).css('padding-right'))
+            var cW = $('canvas', this.el).width() + 
+                parseInt($('canvas', this.el).css('padding-left')) + 
+                parseInt($('canvas', this.el).css('padding-right'));
             // if (x > this.canvasWidth || y > this.canvasHeight || x < 0 || y < 0) {
             if (x > cW || y > this.canvasHeight || x < 0 || y < 0) {
                 return null;
@@ -1430,7 +1474,7 @@
                 shapeids = this.regionShapes[currentRegion],
                 newShapes;
             // will be null if the region value was null
-            if (shapeids) {
+            if (shapeids >= 0) {
                 newShapes = this.renderRegion(currentRegion, highlight);
                 if ($.isArray(newShapes) || $.isArray(shapeids)) {
                     target.replaceWithShapes(shapeids, newShapes);
@@ -1634,8 +1678,9 @@
             var normalRangeMin = this.options.get('normalRangeMin'),
                 normalRangeMax = this.options.get('normalRangeMax'),
                 ytop = canvasTop + Math.round(canvasHeight - (canvasHeight * ((normalRangeMax - this.miny) / rangey))),
-                height = Math.round((canvasHeight * (normalRangeMax - normalRangeMin)) / rangey);
-            this.target.drawRect(canvasLeft, ytop, canvasWidth, height, undefined, this.options.get('normalRangeColor')).append();
+                height = Math.round((canvasHeight * (normalRangeMax - normalRangeMin)) / rangey),
+                color = this.options.get('normalRangeColor');
+            this.target.drawRect(canvasLeft, ytop, canvasWidth, height, color, color).append();
         },
 
         render: function () {
@@ -1888,8 +1933,8 @@
             this.initTarget();
 
             if (chartRangeClip) {
-                clipMin = chartRangeMin === undefined ? -Infinity : chartRangeMin;
-                clipMax = chartRangeMax === undefined ? Infinity : chartRangeMax;
+                clipMin = chartRangeMin == null ? -Infinity : chartRangeMin;
+                clipMax = chartRangeMax == null ? Infinity : chartRangeMax;
             }
 
             numValues = [];
@@ -1934,17 +1979,17 @@
             this.stackMax = stackMax = stacked ? Math.max.apply(Math, stackTotals) : max;
             this.stackMin = stackMin = stacked ? Math.min.apply(Math, numValues) : min;
 
-            if (options.get('chartRangeMin') !== undefined && (options.get('chartRangeClip') || options.get('chartRangeMin') < min)) {
-                min = options.get('chartRangeMin');
+            if (chartRangeMin != null && (chartRangeClip || chartRangeMin < min)) {
+                min = chartRangeMin;
             }
-            if (options.get('chartRangeMax') !== undefined && (options.get('chartRangeClip') || options.get('chartRangeMax') > max)) {
-                max = options.get('chartRangeMax');
+            if (chartRangeMax != null && (chartRangeClip || chartRangeMax > max)) {
+                max = chartRangeMax;
             }
 
             this.zeroAxis = zeroAxis = options.get('zeroAxis', true);
             if (min <= 0 && max >= 0 && zeroAxis) {
                 xaxisOffset = 0;
-            } else if (zeroAxis == false) {
+            } else if (zeroAxis === false) {
                 xaxisOffset = min;
             } else if (min > 0) {
                 xaxisOffset = min;
