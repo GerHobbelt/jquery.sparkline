@@ -1717,11 +1717,6 @@
             xvalues = this.xvalues;
             yvalues = this.yvalues;
 
-            if (!this.yminmax.length || this.yvalues.length < 2) {
-                // empty or all null valuess
-                return;
-            }
-
             canvasTop = canvasLeft = 0;
 
             rangex = this.maxx - this.minx === 0 ? 1 : this.maxx - this.minx;
