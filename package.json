@@ -1,0 +1,33 @@
+{
+  "name": "Sparkline",
+  "title": "jQuery Sparkline",
+  "description": "Easily generate small, inline sparkline charts directly in the browser",
+  "keywords": ["canvas", "charts", "graphics", "graphing", "graphs", "sparklines", "ui", "vml"],
+  "banner": "/* jquery.sparkline 2.4.2 - http://omnipotent.net/jquery.sparkline/ \n Licensed under the New BSD License - see above site for details */\n",
+  "version": "2.4.2",
+  "repository": "git@github.com:relayfoods/jquery.sparkline.git",
+  "main": "./dist/jquery.sparkline.js",
+  "author": {
+    "name": "Gareth Watts",
+    "url": "http://gwatts.com/"
+  },
+  "licenses": [{
+    "type": "BSD-3-Clause",
+    "url": "http://opensource.org/licenses/BSD-3-Clause"
+  }],
+  "bugs": "https://github.com/gwatts/jquery.sparkline/issues",
+  "homepage": "http://omnipotent.net/jquery.sparkline/",
+  "demo": "http://omnipotent.net/jquery.sparkline/",
+  "docs": "http://omnipotent.net/jquery.sparkline/#s-docs",
+  "download": "http://omnipotent.net/jquery.sparkline/#s-download",
+  "dependencies": {
+    "jquery": ">=2.1.4"
+  },
+  "devDependencies": {
+    "grunt": "1.0.1",
+    "grunt-contrib-jshint": "1.1.0",
+    "grunt-contrib-uglify": "2.3.0",
+    "grunt-contrib-watch": "1.0.0",
+    "grunt-contrib-concat": "1.0.1"
+  }
+}

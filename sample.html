@@ -1,5 +1,6 @@
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" 
-    "http://www.w3.org/TR/html4/strict.dtd">
+<!DOCTYPE html>
+<html lang="en">
+
 <head>
 
     <style>
@@ -99,11 +100,38 @@
         options.timeMarkInterval = 0;
         $('.timeline2').sparkline(data2, options);
 
+
+        var types = ['line', 'bar', 'tristate', 'bullet', 'discrete', 'pie', 'box', 'stack'];
+        var datavalues = [null, null, 1, 100,80,50,70,40,40,10, null, 100, null, 1000, -20, null, 90,40,20,60,80,20,19];
+        for (var i = 0; i < types.length; i++) {
+            var type = types[i];
+
+            $('.test-basic-' + type).sparkline(datavalues, {
+                type: type, 
+                barColor: 'red'
+            });
+
+            var $el = $('.fixed-dimensions-' + type);
+            console.log("w/h: ", $el.width(), $el.height());
+            $el.sparkline(datavalues, {
+                type: type, 
+                barColor: 'red',
+                width: $el.innerWidth(),
+                height: $el.innerHeight()
+            });
+        }
     });
 
     </script>
 </head>
 <body>
+<h1>Basic sparkline demo page</h1>
+<nav>
+    <a href="sample.html">basic demo page</a>
+    <a href="sample2.html">alternative demo page: ordinary version</a>
+    <a href="sample-bootstrap.html">alternative demo page: bootstrap version</a>
+</nav>
+
 
 <p>
 Inline Sparkline: <span class="inlinesparkline">1,4,4,7,5,9,10</span>.
@@ -124,5 +152,76 @@ Timeline chart with time marks: <span class="timeline1">Loading..</span>
 Timeline chart without time marks: <div class="timeline2" style="background-color:#578577;line-height:1px;display:inline-block;">Loading..</div>
 </p>
 
+<hr />
+<h1>Default sparklines</h1>
+<p>
+Line chart: <span class="test-basic-line">Loading..</span>
+</p>
+<p>
+Bar chart: <span class="test-basic-bar">Loading..</span>
+</p>
+<p>
+Tristate chart: <span class="test-basic-tristate">Loading..</span>
+</p>
+<p>
+Bullet chart: <span class="test-basic-bullet">Loading..</span>
+</p>
+<p>
+Discrete chart: <span class="test-basic-discrete">Loading..</span>
+</p>
+<p>
+Pie chart: <span class="test-basic-pie">Loading..</span>
+</p>
+<p>
+Box chart: <span class="test-basic-box">Loading..</span>
+</p>
+<p>
+Stack chart: <span class="test-basic-stack">Loading..</span>
+</p>
+
+<hr />
+<h1>Fixed-dimension sparklines</h1>
+<style>
+.fixed-dimensions
+{
+    display: inline-block;
+    padding: 1px;
+    border: 1px solid grey;
+
+    width: 40px;
+    height: 20px;
+}
+.wrapper
+{
+    display: inline-block;
+
+    padding: 1px;
+    border: 1px dotted black;
+}
+</style>
+<p>
+Line chart: <span class="wrapper"><span class="fixed-dimensions fixed-dimensions-line">Loading..</span></span>
+</p>
+<p>
+Bar chart: <span class="wrapper"><span class="fixed-dimensions fixed-dimensions-bar">Loading..</span></span>
+</p>
+<p>
+Tristate chart: <span class="wrapper"><span class="fixed-dimensions fixed-dimensions-tristate">Loading..</span></span>
+</p>
+<p>
+Bullet chart: <span class="wrapper"><span class="fixed-dimensions fixed-dimensions-bullet">Loading..</span></span>
+</p>
+<p>
+Discrete chart: <span class="wrapper"><span class="fixed-dimensions fixed-dimensions-discrete">Loading..</span></span>
+</p>
+<p>
+Pie chart: <span class="wrapper"><span class="fixed-dimensions fixed-dimensions-pie">Loading..</span></span>
+</p>
+<p>
+Box chart: <span class="wrapper"><span class="fixed-dimensions fixed-dimensions-box">Loading..</span></span>
+</p>
+<p>
+Stack chart: <span class="wrapper"><span class="fixed-dimensions fixed-dimensions-stack">Loading..</span></span>
+</p>
 </body>
 </html>

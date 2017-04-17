@@ -6,3 +6,6 @@ Session.vim
 # Backup files created by other editors:
 *~
 *.bak
+
+# ignore node modules
+node_modules
