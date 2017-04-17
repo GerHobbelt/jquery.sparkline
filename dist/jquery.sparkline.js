@@ -232,7 +232,7 @@
     // CUSTOM MOD: median var added
     var UNSET_OPTION = {},
         getDefaults, createClass, SPFormat, clipval, median, quartile, normalizeValue, normalizeValues,
-        remove, isNumber, all, sum, addCSS, ensureArray, formatNumber, RangeMap,
+        remove, isNumber, all, sum, addCSS, getDevicePixelRatio, ensureArray, formatNumber, RangeMap,
         MouseHandler, Tooltip, barHighlightMixin,
         line, bar, tristate, discrete, bullet, pie, stack, box, timeline, defaultStyles, initStyles,
         VShape, VCanvas_base, VCanvas_canvas, VCanvas_vml, pending, shapeCount = 0;
@@ -705,7 +705,14 @@
         }
     };
 
-
+    getDevicePixelRatio = function() {
+      if (window.devicePixelRatio) return window.devicePixelRatio;
+      if (window.matchMedia) {
+        const mediaStr = '(min-resolution: 2dppx), (-webkit-min-device-pixel-ratio: 1.5),(-moz-min-device-pixel-ratio: 1.5),(min-device-pixel-ratio: 1.5)';
+        return window.matchMedia(mediaStr).matches ? 2 : 1;
+      }
+      return 1;
+    };
     // Provide a cross-browser interface to a few simple drawing primitives
     $.fn.simpledraw = function (width, height, useExisting, interact) {
         var target, mhandler;
@@ -2127,7 +2134,16 @@
             }
             yoffsetNeg = yoffset;
             console.log('bar: ', {
-                yoffsetNeg: yoffsetNeg, vals: vals, range: range, allMin: allMin, minPlotted: minPlotted, stackMin: this.stackMin, stacked: stacked, stackTotals: stackTotals, reserve: reserve, xaxisOffset: xaxisOffset
+                yoffsetNeg: yoffsetNeg, 
+                vals: vals, 
+                range: range, 
+                allMin: allMin, 
+                minPlotted: minPlotted, 
+                stackMin: this.stackMin, 
+                stacked: stacked, 
+                stackTotals: stackTotals, 
+                reserve: reserve, 
+                xaxisOffset: xaxisOffset
             });
             for (i = 0; i < valcount; i++) {
                 val = vals[i];
@@ -2170,7 +2186,18 @@
                 if (highlight) {
                     color = this.calcHighlightColor(color, options);
                 }
-                console.log('one bar: ', i, val, valuenum, xaxisOffset, yoffset, y, yoffsetNeg, height, x, color);
+                console.log('one bar: ', {
+                  i: i, 
+                  val: val, 
+                  valuenum: valuenum, 
+                  xaxisOffset: xaxisOffset, 
+                  yoffset: yoffset, 
+                  y: y, 
+                  yoffsetNeg: yoffsetNeg, 
+                  height: height, 
+                  x: x, 
+                  color: color
+                });
                 result.push(target.drawRect(x * this.xScale, y, (this.barWidth - 1) * this.xScale, Math.abs(height), color, color));
             }
             if (result.length === 1) {
@@ -3278,13 +3305,14 @@
             }
             this.context = this.canvas.getContext('2d');
 
+            var dpi = this.dpi = getDevicePixelRatio();
             $.data(target, '_jqs_vcanvas', this);
             $(this.canvas).css({ display: 'inline-block', width: width, height: height, verticalAlign: 'top' });
             this._insert(this.canvas, target);
             this.context.scale(1, 1);
             this._calculatePixelDims(width, height, this.canvas);
-            this.canvas.width = this.pixelWidth;
-            this.canvas.height = this.pixelHeight;
+            this.canvas.width = this.pixelWidth * dpi;
+            this.canvas.height = this.pixelHeight * dpi;
             this.interact = interact;
             this.shapes = {};
             this.shapeseq = [];
@@ -3306,7 +3334,7 @@
 
         reset: function () {
             var context = this._getContext();
-            context.clearRect(0, 0, this.pixelWidth, this.pixelHeight);
+            context.clearRect(0, 0, this.pixelWidth * this.dpi, this.pixelHeight * this.dpi);
             this.shapes = {};
             this.shapeseq = [];
             this.currentTargetShapeId = undefined;
@@ -3480,7 +3508,10 @@
                 shapeCount = shapeseq.length,
                 context = this._getContext(),
                 shapeid, shape, i;
-            context.clearRect(0, 0, this.pixelWidth, this.pixelHeight);
+            var dpi = this.dpi;
+            context.clearRect(0, 0, this.pixelWidth * dpi, this.pixelHeight * dpi);
+            context.save();
+            context.scale(dpi, dpi);
             for (i = 0; i < shapeCount; i++) {
                 shapeid = shapeseq[i];
                 shape = shapes[shapeid];
@@ -3491,6 +3522,7 @@
                 this.shapes = {};
                 this.shapeseq = [];
             }
+            context.restore();
         }
     });
 
