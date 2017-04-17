@@ -1943,7 +1943,9 @@
             this.barWidth = barWidth;
             this.barSpacing = barSpacing;
             this.totalBarWidth = barWidth + barSpacing;
-            this.width = width = (values.length * barWidth) + ((values.length - 1) * barSpacing);
+            var rawWidth = values.length * barWidth + (values.length - 1) * barSpacing;
+            this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
+            this.width = rawWidth * this.xScale; 
 
             this.initTarget();
 
@@ -2019,7 +2021,7 @@
             }
             this.xaxisOffset = xaxisOffset;
 
-            range = stacked ? (Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg)) : max - min;
+            range = stacked ? Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg) : max - min;
 
             // as we plot zero/min values as a single pixel line, we add a pixel to all other
             // values - Reduce the effective canvas size to suit
@@ -2042,6 +2044,7 @@
         },
 
         getRegion: function (el, x, y) {
+            x /= this.xScale; 
             var result = Math.floor(x / this.totalBarWidth);
             return (result < 0 || result >= this.values.length) ? undefined : result;
         },
@@ -2170,7 +2173,7 @@
                   x: x, 
                   color: color
                 });
-                result.push(target.drawRect(x, y, this.barWidth - 1, height - 1, color, color));
+                result.push(target.drawRect(x * this.xScale, y, (this.barWidth - 1) * this.xScale, Math.abs(height), color, color));
             }
             if (result.length === 1) {
                 return result[0];
@@ -2299,7 +2302,9 @@
             this.barSpacing = barSpacing;
             this.totalBarWidth = barWidth + barSpacing;
             this.values = $.map(values, Number);
-            this.width = width = (values.length * barWidth) + ((values.length - 1) * barSpacing);
+            var rawWidth = (values.length * barWidth) + ((values.length - 1) * barSpacing);
+            this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
+            this.width = rawWidth * this.xScale; 
 
             this.initColorMap();
             this.initTarget();
@@ -2364,7 +2369,7 @@
             if (highlight) {
                 color = this.calcHighlightColor(color, options);
             }
-            return target.drawRect(x, y, this.barWidth - 1, height - 1, color, color);
+            return target.drawRect(x * this.xScale, y, (this.barWidth - 1) * this.xScale, height - 1, color, color);
         }
     });
 
