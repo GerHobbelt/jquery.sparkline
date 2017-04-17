@@ -7,13 +7,14 @@
             }
             this.context = this.canvas.getContext('2d');
 
+            var dpi = this.dpi = getDevicePixelRatio();
             $.data(target, '_jqs_vcanvas', this);
             $(this.canvas).css({ display: 'inline-block', width: width, height: height, verticalAlign: 'top' });
             this._insert(this.canvas, target);
             this.context.scale(1, 1);
             this._calculatePixelDims(width, height, this.canvas);
-            this.canvas.width = this.pixelWidth;
-            this.canvas.height = this.pixelHeight;
+            this.canvas.width = this.pixelWidth * dpi;
+            this.canvas.height = this.pixelHeight * dpi;
             this.interact = interact;
             this.shapes = {};
             this.shapeseq = [];
@@ -35,7 +36,7 @@
 
         reset: function () {
             var context = this._getContext();
-            context.clearRect(0, 0, this.pixelWidth, this.pixelHeight);
+            context.clearRect(0, 0, this.pixelWidth * this.dpi, this.pixelHeight * this.dpi);
             this.shapes = {};
             this.shapeseq = [];
             this.currentTargetShapeId = undefined;
@@ -209,7 +210,10 @@
                 shapeCount = shapeseq.length,
                 context = this._getContext(),
                 shapeid, shape, i;
-            context.clearRect(0, 0, this.pixelWidth, this.pixelHeight);
+            var dpi = this.dpi;
+            context.clearRect(0, 0, this.pixelWidth * dpi, this.pixelHeight * dpi);
+            context.save();
+            context.scale(dpi, dpi);
             for (i = 0; i < shapeCount; i++) {
                 shapeid = shapeseq[i];
                 shape = shapes[shapeid];
@@ -220,6 +224,7 @@
                 this.shapes = {};
                 this.shapeseq = [];
             }
+            context.restore();
         }
     });
 
