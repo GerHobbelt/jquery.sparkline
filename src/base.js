@@ -65,20 +65,7 @@
                     mhandler.registerSparkline(sp);
                 }
             };
-            if (($(this).html() && !options.get('disableHiddenCheck') && $(this).is(':hidden')) || !$(this).parents('body').length) {
-                if (!options.get('composite') && $.data(this, '_jqs_pending')) {
-                    // remove any existing references to the element
-                    for (i = pending.length; i; i--) {
-                        if (pending[i - 1][0] == this) {
-                            pending.splice(i - 1, 1);
-                        }
-                    }
-                }
-                pending.push([this, render]);
-                $.data(this, '_jqs_pending', true);
-            } else {
-                render.call(this);
-            }
+            render.call(this);
         });
     };
 
@@ -130,7 +117,6 @@
             }
             this.mergedOptions = $.extend({}, base, extendedOptions, userOptions);
         },
-
 
         getTagSetting: function (key) {
             var prefix = this.tagOptionsPrefix,

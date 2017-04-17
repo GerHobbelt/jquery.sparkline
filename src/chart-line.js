@@ -155,8 +155,9 @@
             var normalRangeMin = this.options.get('normalRangeMin'),
                 normalRangeMax = this.options.get('normalRangeMax'),
                 ytop = canvasTop + Math.round(canvasHeight - (canvasHeight * ((normalRangeMax - this.miny) / rangey))),
-                height = Math.round((canvasHeight * (normalRangeMax - normalRangeMin)) / rangey);
-            this.target.drawRect(canvasLeft, ytop, canvasWidth, height, undefined, this.options.get('normalRangeColor')).append();
+                height = Math.round((canvasHeight * (normalRangeMax - normalRangeMin)) / rangey),
+                color = this.options.get('normalRangeColor');
+            this.target.drawRect(canvasLeft, ytop, canvasWidth, height, color, color).append();
         },
 
         render: function () {
@@ -182,11 +183,6 @@
 
             xvalues = this.xvalues;
             yvalues = this.yvalues;
-
-            if (!this.yminmax.length || this.yvalues.length < 2) {
-                // empty or all null valuess
-                return;
-            }
 
             canvasTop = canvasLeft = 0;
 
@@ -219,8 +215,12 @@
                 }
             }
 
-
             canvasHeight--;
+
+            if (options.get('backgroundColor') !== undefined) {
+                var backgroundColor = options.get('backgroundColor')
+                this.target.drawRect(canvasLeft, canvasTop, canvasWidth, canvasHeight, backgroundColor, backgroundColor).append();
+            }
 
             if (options.get('normalRangeMin') !== undefined && !options.get('drawNormalOnTop')) {
                 this.drawNormalRange(canvasLeft, canvasTop, canvasHeight, canvasWidth, rangey);

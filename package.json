@@ -3,8 +3,8 @@
   "title": "jQuery Sparkline",
   "description": "Easily generate small, inline sparkline charts directly in the browser",
   "keywords": ["canvas", "charts", "graphics", "graphing", "graphs", "sparklines", "ui", "vml"],
-  "banner": "/* jquery.sparkline 2.4.1 - http://omnipotent.net/jquery.sparkline/ \n Licensed under the New BSD License - see above site for details */\n",
-  "version": "2.4.1",
+  "banner": "/* jquery.sparkline 2.4.2 - http://omnipotent.net/jquery.sparkline/ \n Licensed under the New BSD License - see above site for details */\n",
+  "version": "2.4.2",
   "repository": "git@github.com:relayfoods/jquery.sparkline.git",
   "main": "./dist/jquery.sparkline.js",
   "author": {
