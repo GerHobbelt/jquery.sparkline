@@ -71,7 +71,7 @@
                     stackRanges[i] = stackRangesNeg[i] = 0;
                     for (j = 0, slen = vlist.length; j < slen; j++) {
                         val = svals[j] = chartRangeClip ? clipval(vlist[j], clipMin, clipMax) : vlist[j];
-                        if (val !== null) {
+                        if (val != null) {
                             if (val > 0) {
                                 stackTotals[i] += val;
                             }
@@ -90,7 +90,7 @@
                 } else {
                     val = chartRangeClip ? clipval(values[i], clipMin, clipMax) : values[i];
                     val = values[i] = normalizeValue(val);
-                    if (val !== null) {
+                    if (val != null) {
                         numValues.push(val);
                     }
                 }
@@ -127,7 +127,7 @@
             } else {
                 range = stacked ? Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg) : max - min;
             }
-            // as we plot zero/min values a single pixel line, we add a pixel to all other
+            // as we plot zero/min values as a single pixel line, we add a pixel to all other
             // values - Reduce the effective canvas size to suit
             this.canvasHeightEf = (zeroAxis && min < 0) ? this.canvasHeight - 2 : this.canvasHeight - 1;
 
@@ -225,6 +225,18 @@
                 }
             }
             yoffsetNeg = yoffset;
+            console.log('bar: ', {
+                yoffsetNeg: yoffsetNeg, 
+                vals: vals, 
+                range: range, 
+                allMin: allMin, 
+                minPlotted: minPlotted, 
+                stackMin: this.stackMin, 
+                stacked: stacked, 
+                stackTotals: stackTotals, 
+                reserve: reserve, 
+                xaxisOffset: xaxisOffset
+            });
             for (i = 0; i < valcount; i++) {
                 val = vals[i];
 
@@ -251,7 +263,7 @@
                     }
                 } else {
                     // range is 0 - all values are the same.
-                    height =  Math.ceil(canvasHeightEf / (valcount || 1));
+                    height = Math.ceil(canvasHeightEf / (valcount || 1));
                 }
 
                 if (val < xaxisOffset || (val === xaxisOffset && yoffset === 0)) {
@@ -261,11 +273,24 @@
                     y = yoffset - height;
                     yoffset -= height;
                 }
+
                 color = this.calcColor(i, val, valuenum);
                 if (highlight) {
                     color = this.calcHighlightColor(color, options);
                 }
-                result.push(target.drawRect(x * this.xScale, y, (this.barWidth - 1) * this.xScale, height, color, color));
+                console.log('one bar: ', {
+                  i: i, 
+                  val: val, 
+                  valuenum: valuenum, 
+                  xaxisOffset: xaxisOffset, 
+                  yoffset: yoffset, 
+                  y: y, 
+                  yoffsetNeg: yoffsetNeg, 
+                  height: height, 
+                  x: x, 
+                  color: color
+                });
+                result.push(target.drawRect(x * this.xScale, y, (this.barWidth - 1) * this.xScale, Math.abs(height), color, color));
             }
             if (result.length === 1) {
                 return result[0];
