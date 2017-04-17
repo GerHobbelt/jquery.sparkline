@@ -121,7 +121,6 @@
             this.xvalues = xvalues;
             this.yvalues = yvalues;
             this.yminmax = yminmax;
-
         },
 
         processRangeOptions: function () {
@@ -219,7 +218,6 @@
                     canvasWidth -= Math.ceil(spotRadius);
                 }
             }
-
 
             canvasHeight--;
 
@@ -343,14 +341,12 @@
             }
 
             // explicitly compare the refLineX/Y option values with 'null' as numeric zero(0) should plot a ref-line at zero!
-            if (options.get('refLineX') != null) {
-                var y;
+            if (options.get('refLineX') != null) {                                          // jshint ignore:line
                 y = Math.round(this.canvasHeight - (options.get('refLineX') - this.miny) * (this.canvasHeight/rangey));
                 target.drawLine(0, y, this.canvasWidth, y, options.get('refLineColor')).append();
             }
 
-            if (options.get('refLineY') != null) {
-                var x;
+            if (options.get('refLineY') != null) {                                          // jshint ignore:line
                 x = Math.round((options.get('refLineY') - this.minx) * (this.canvasWidth/rangex));
                 target.drawLine(x, this.canvasHeight, x, 0, options.get('refLineColor')).append();
             }

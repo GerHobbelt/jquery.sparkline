@@ -96,9 +96,9 @@
                 done.push(i);
             } else if (!$(el).closest('html').length && !$.data(el, '_jqs_pending')) {
                 // element has been inserted and removed from the DOM
-                // If it was not yet inserted into the dom then the .data request
+                // If it was not yet inserted into the DOM then the .data request
                 // will return true.
-                // removing from the dom causes the data to be removed.
+                // removing from the DOM causes the data to be removed.
                 $.data(pending[i][0], '_jqs_pending', false);
                 done.push(i);
             }
@@ -130,7 +130,6 @@
             }
             this.mergedOptions = $.extend({}, base, extendedOptions, userOptions);
         },
-
 
         getTagSetting: function (key) {
             var prefix = this.tagOptionsPrefix,
@@ -265,7 +264,8 @@
             this.changeHighlight(false);
         },
 
-        changeHighlight: function (highlight)  {},
+        changeHighlight: function (highlight) {
+        },
 
         /**
          * Fetch the HTML to display as a tooltip
@@ -306,7 +306,7 @@
                 newFields = [];
                 for (i = fields.length; i--;) {
                     fv = fields[i][showFieldsKey];
-                    if ((j = $.inArray(fv, showFields)) != -1) {
+                    if ((j = $.inArray(fv, showFields)) !== -1) {
                         newFields[j] = fields[i];
                     }
                 }
@@ -349,7 +349,8 @@
             return '';
         },
 
-        getCurrentRegionFields: function () {},
+        getCurrentRegionFields: function () {
+        },
 
         calcHighlightColor: function (color, options) {
             var highlightColor = options.get('highlightColor'),

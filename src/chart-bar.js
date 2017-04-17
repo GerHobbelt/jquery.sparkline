@@ -12,9 +12,10 @@
                 chartRangeClip = options.get('chartRangeClip'),
                 stackMin = Infinity,
                 stackMax = -Infinity,
-                isStackString, groupMin, groupMax, stackRanges,
+                isStackString, groupMin, groupMax, stackRanges, stackRangesNeg, stackTotals, actualMin, actualMax,
                 numValues, i, vlen, range, zeroAxis, xaxisOffset, min, max, clipMin, clipMax,
                 stacked, vlist, j, slen, svals, val, yoffset, yMaxCalc, canvasHeightEf;
+
             bar._super.init.call(this, el, values, options, width, height);
 
             // scan values to determine whether to stack bars
@@ -54,8 +55,8 @@
 
             numValues = [];
             stackRanges = stacked ? [] : numValues;
-            var stackTotals = [];
-            var stackRangesNeg = [];
+            stackTotals = [];
+            stackRangesNeg = [];
             for (i = 0, vlen = values.length; i < vlen; i++) {
                 if (stacked) {
                     vlist = values[i];
@@ -64,7 +65,7 @@
                     stackRanges[i] = stackRangesNeg[i] = 0;
                     for (j = 0, slen = vlist.length; j < slen; j++) {
                         val = svals[j] = chartRangeClip ? clipval(vlist[j], clipMin, clipMax) : vlist[j];
-                        if (val !== null) {
+                        if (val != null) {
                             if (val > 0) {
                                 stackTotals[i] += val;
                             }
@@ -83,11 +84,12 @@
                 } else {
                     val = chartRangeClip ? clipval(values[i], clipMin, clipMax) : values[i];
                     val = values[i] = normalizeValue(val);
-                    if (val !== null) {
+                    if (val != null) {
                         numValues.push(val);
                     }
                 }
             }
+
             this.max = max = Math.max.apply(Math, numValues);
             this.min = min = Math.min.apply(Math, numValues);
             this.stackMax = stackMax = stacked ? Math.max.apply(Math, stackTotals) : max;
@@ -114,7 +116,7 @@
 
             range = stacked ? (Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg)) : max - min;
 
-            // as we plot zero/min values a single pixel line, we add a pixel to all other
+            // as we plot zero/min values as a single pixel line, we add a pixel to all other
             // values - Reduce the effective canvas size to suit
             this.canvasHeightEf = (zeroAxis && min < 0) ? this.canvasHeight - 2 : this.canvasHeight - 1;
 
@@ -234,6 +236,7 @@
                 } else {
                     height = 1;
                 }
+
                 if (val < xaxisOffset || (val === xaxisOffset && yoffset === 0)) {
                     y = yoffsetNeg;
                     yoffsetNeg += height;
@@ -241,6 +244,7 @@
                     y = yoffset - height;
                     yoffset -= height;
                 }
+
                 color = this.calcColor(i, val, valuenum);
                 if (highlight) {
                     color = this.calcHighlightColor(color, options);

@@ -124,8 +124,9 @@
 *   numberDecimalMark - Character to use for the decimal point when formatting numbers - Defaults to "."
 *   numberDigitGroupCount - Number of digits between group separator - Defaults to 3
 *
-* There are 7 types of sparkline, selected by supplying a "type" option of 'line' (default),
-* 'bar', 'tristate', 'bullet', 'discrete', 'pie' or 'box'
+* There are 8 types of sparkline, selected by supplying a "type" option of 'line' (default),
+* 'bar', 'tristate', 'bullet', 'discrete', 'pie', 'box' or 'stack'
+*
 *    line - Line chart.  Options:
 *       spotColor - Set to '' to not end each line in a circular spot
 *       minSpotColor - If set, color of spot at minimum value
@@ -134,7 +135,7 @@
 *       lineWidth - Width of line in pixels
 *       normalRangeMin
 *       normalRangeMax - If set draws a filled horizontal bar between these two values marking the "normal"
-*                      or expected range of values
+*                        or expected range of values
 *       normalRangeColor - Color to use for the above bar
 *       drawNormalOnTop - Draw the normal range above the chart fill color if true
 *       defaultPixelsPerValue - Defaults to 3 pixels of width for each value in the chart
@@ -143,12 +144,12 @@
 *       valueSpots - Specify which points to draw spots on, and in which color.  Accepts a range map
 *
 *   bar - Bar chart.  Options:
-*       barColor - Color of bars for postive values
+*       barColor - Color of bars for positive values
 *       negBarColor - Color of bars for negative values
 *       zeroColor - Color of bars with zero values
 *       nullColor - Color of bars with null values - Defaults to omitting the bar entirely
 *       barWidth - Width of bars in pixels
-*       colorMap - Optional mappnig of values to colors to override the *BarColor values above
+*       colorMap - Optional mapping of values to colors to override the *BarColor values above
 *                  can be an Array of values to control the color of individual bars or a range map
 *                  to specify colors for individual ranges of values
 *       barSpacing - Gap between bars in pixels
@@ -160,7 +161,7 @@
 *       zeroBarColor - Color of draw values
 *       barWidth - Width of bars in pixels
 *       barSpacing - Gap between bars in pixels
-*       colorMap - Optional mappnig of values to colors to override the *BarColor values above
+*       colorMap - Optional mapping of values to colors to override the *BarColor values above
 *                  can be an Array of values to control the color of individual bars or a range map
 *                  to specify colors for individual ranges of values
 *
@@ -468,6 +469,7 @@
             var self = this,
                 fields = fieldset,
                 match, token, lookupkey, fieldvalue, prec;
+
             return this.format.replace(this.fre, function () {
                 var lookup;
                 token = arguments[1];
@@ -506,8 +508,8 @@
         }
     });
 
-    // convience method to avoid needing the new operator
-    $.spformat = function(format, fclass) {
+    // convenience method to avoid needing the new operator
+    $.spformat = function (format, fclass) {
         return new SPFormat(format, fclass);
     };
 
@@ -521,10 +523,10 @@
         return val;
     };
 
-    // CUSTOM MOD: completely new median func
+    // CUSTOM MOD: completely new median function
     median = function (values) {
         var ret, idx;
-        if (!(values.length % 2)) {
+        if (0 === values.length % 2) {
             var v1, v2;
             idx = values.length / 2;
             v1 = values[idx - 1];
@@ -532,14 +534,17 @@
             ret = (v1 + v2) / 2;
         }
         else {
-            idx = parseInt(values.length / 2)
-            ret = values[idx]
+            idx = parseInt(values.length / 2);
+            ret = values[idx];
         }
 
-        return { 'm': ret, 'idx': idx };
+        return { 
+            m: ret, 
+            idx: idx 
+        };
     };
 
-    // CUSTOM MOD: completely rewritten quartile func
+    // CUSTOM MOD: completely rewritten quartile function
     quartile = function (values, q) {
         var ret, m, med;
         m = median(values);
@@ -548,28 +553,28 @@
             ret = m.m;
         }
         else {
-            var arr = new Array();
-            med = m.m
+            var arr = [];
+            med = m.m;
 
-            if (med != null) {
+            if (med != null) {                                                              // jshint ignore:line
                 var i = 0;
                 if (q === 1) {
                     while (i < m.idx) {
                       arr[i] = values[i];
-                      i ++;
+                      i++;
                     }
                     if (!arr.length)
-                      arr = [ values[0] ]
+                      arr = [ values[0] ];
                 }
                 else if (q === 3) {
                     var j = values.length - 1;
                     while (j > m.idx) {
                         arr[i] = values[j];
-                        i ++;
-                        j --;
+                        i++;
+                        j--;
                     }
                     if (!arr.length)
-                      arr = [ values[values.length - 1] ]
+                      arr = [ values[values.length - 1] ];
                 }
             }
             m = median(arr);
@@ -581,23 +586,23 @@
     normalizeValue = function (val) {
         var nf;
         switch (val) {
-            case 'undefined':
-                val = undefined;
-                break;
-            case 'null':
-                val = null;
-                break;
-            case 'true':
-                val = true;
-                break;
-            case 'false':
-                val = false;
-                break;
-            default:
-                nf = parseFloat(val);
-                if (val == nf) {
-                    val = nf;
-                }
+        case 'undefined':
+            val = undefined;
+            break;
+        case 'null':
+            val = null;
+            break;
+        case 'true':
+            val = true;
+            break;
+        case 'false':
+            val = false;
+            break;
+        default:
+            nf = parseFloat(val);
+            if (val == nf) {
+                val = nf;
+            }
         }
         return val;
     };
@@ -664,7 +669,7 @@
     };
 
     // http://paulirish.com/2008/bookmarklet-inject-new-css-rules/
-    addCSS = function(css) {
+    addCSS = function (css) {
         var tag, iefail;
         if (document.createStyleSheet) {
             try {
@@ -1000,7 +1005,6 @@
                 }
                 x = this.mousex - this.offsetLeft;
                 y = this.mousey - this.offsetTop;
-
             } else {
                 this.mousex = x = x - this.offsetLeft;
                 this.mousey = y = y - this.offsetTop;
@@ -1138,9 +1142,9 @@
                 done.push(i);
             } else if (!$(el).closest('html').length && !$.data(el, '_jqs_pending')) {
                 // element has been inserted and removed from the DOM
-                // If it was not yet inserted into the dom then the .data request
+                // If it was not yet inserted into the DOM then the .data request
                 // will return true.
-                // removing from the dom causes the data to be removed.
+                // removing from the DOM causes the data to be removed.
                 $.data(pending[i][0], '_jqs_pending', false);
                 done.push(i);
             }
@@ -1172,7 +1176,6 @@
             }
             this.mergedOptions = $.extend({}, base, extendedOptions, userOptions);
         },
-
 
         getTagSetting: function (key) {
             var prefix = this.tagOptionsPrefix,
@@ -1307,7 +1310,8 @@
             this.changeHighlight(false);
         },
 
-        changeHighlight: function (highlight)  {},
+        changeHighlight: function (highlight) {
+        },
 
         /**
          * Fetch the HTML to display as a tooltip
@@ -1348,7 +1352,7 @@
                 newFields = [];
                 for (i = fields.length; i--;) {
                     fv = fields[i][showFieldsKey];
-                    if ((j = $.inArray(fv, showFields)) != -1) {
+                    if ((j = $.inArray(fv, showFields)) !== -1) {
                         newFields[j] = fields[i];
                     }
                 }
@@ -1391,7 +1395,8 @@
             return '';
         },
 
-        getCurrentRegionFields: function () {},
+        getCurrentRegionFields: function () {
+        },
 
         calcHighlightColor: function (color, options) {
             var highlightColor = options.get('highlightColor'),
@@ -1595,7 +1600,6 @@
             this.xvalues = xvalues;
             this.yvalues = yvalues;
             this.yminmax = yminmax;
-
         },
 
         processRangeOptions: function () {
@@ -1693,7 +1697,6 @@
                     canvasWidth -= Math.ceil(spotRadius);
                 }
             }
-
 
             canvasHeight--;
 
@@ -1817,14 +1820,12 @@
             }
 
             // explicitly compare the refLineX/Y option values with 'null' as numeric zero(0) should plot a ref-line at zero!
-            if (options.get('refLineX') != null) {
-                var y;
+            if (options.get('refLineX') != null) {                                          // jshint ignore:line
                 y = Math.round(this.canvasHeight - (options.get('refLineX') - this.miny) * (this.canvasHeight/rangey));
                 target.drawLine(0, y, this.canvasWidth, y, options.get('refLineColor')).append();
             }
 
-            if (options.get('refLineY') != null) {
-                var x;
+            if (options.get('refLineY') != null) {                                          // jshint ignore:line
                 x = Math.round((options.get('refLineY') - this.minx) * (this.canvasWidth/rangex));
                 target.drawLine(x, this.canvasHeight, x, 0, options.get('refLineColor')).append();
             }
@@ -1850,9 +1851,10 @@
                 chartRangeClip = options.get('chartRangeClip'),
                 stackMin = Infinity,
                 stackMax = -Infinity,
-                isStackString, groupMin, groupMax, stackRanges,
+                isStackString, groupMin, groupMax, stackRanges, stackRangesNeg, stackTotals, actualMin, actualMax,
                 numValues, i, vlen, range, zeroAxis, xaxisOffset, min, max, clipMin, clipMax,
                 stacked, vlist, j, slen, svals, val, yoffset, yMaxCalc, canvasHeightEf;
+
             bar._super.init.call(this, el, values, options, width, height);
 
             // scan values to determine whether to stack bars
@@ -1892,8 +1894,8 @@
 
             numValues = [];
             stackRanges = stacked ? [] : numValues;
-            var stackTotals = [];
-            var stackRangesNeg = [];
+            stackTotals = [];
+            stackRangesNeg = [];
             for (i = 0, vlen = values.length; i < vlen; i++) {
                 if (stacked) {
                     vlist = values[i];
@@ -1902,7 +1904,7 @@
                     stackRanges[i] = stackRangesNeg[i] = 0;
                     for (j = 0, slen = vlist.length; j < slen; j++) {
                         val = svals[j] = chartRangeClip ? clipval(vlist[j], clipMin, clipMax) : vlist[j];
-                        if (val !== null) {
+                        if (val != null) {
                             if (val > 0) {
                                 stackTotals[i] += val;
                             }
@@ -1921,11 +1923,12 @@
                 } else {
                     val = chartRangeClip ? clipval(values[i], clipMin, clipMax) : values[i];
                     val = values[i] = normalizeValue(val);
-                    if (val !== null) {
+                    if (val != null) {
                         numValues.push(val);
                     }
                 }
             }
+
             this.max = max = Math.max.apply(Math, numValues);
             this.min = min = Math.min.apply(Math, numValues);
             this.stackMax = stackMax = stacked ? Math.max.apply(Math, stackTotals) : max;
@@ -1952,7 +1955,7 @@
 
             range = stacked ? (Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg)) : max - min;
 
-            // as we plot zero/min values a single pixel line, we add a pixel to all other
+            // as we plot zero/min values as a single pixel line, we add a pixel to all other
             // values - Reduce the effective canvas size to suit
             this.canvasHeightEf = (zeroAxis && min < 0) ? this.canvasHeight - 2 : this.canvasHeight - 1;
 
@@ -2072,6 +2075,7 @@
                 } else {
                     height = 1;
                 }
+
                 if (val < xaxisOffset || (val === xaxisOffset && yoffset === 0)) {
                     y = yoffsetNeg;
                     yoffsetNeg += height;
@@ -2079,6 +2083,7 @@
                     y = yoffset - height;
                     yoffset -= height;
                 }
+
                 color = this.calcColor(i, val, valuenum);
                 if (highlight) {
                     color = this.calcHighlightColor(color, options);
@@ -3379,7 +3384,6 @@
                 this.shapeseq = [];
             }
         }
-
     });
 
 

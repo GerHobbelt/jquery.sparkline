@@ -45,6 +45,7 @@
             var self = this,
                 fields = fieldset,
                 match, token, lookupkey, fieldvalue, prec;
+
             return this.format.replace(this.fre, function () {
                 var lookup;
                 token = arguments[1];
@@ -83,8 +84,8 @@
         }
     });
 
-    // convience method to avoid needing the new operator
-    $.spformat = function(format, fclass) {
+    // convenience method to avoid needing the new operator
+    $.spformat = function (format, fclass) {
         return new SPFormat(format, fclass);
     };
 
@@ -98,10 +99,10 @@
         return val;
     };
 
-    // CUSTOM MOD: completely new median func
+    // CUSTOM MOD: completely new median function
     median = function (values) {
         var ret, idx;
-        if (!(values.length % 2)) {
+        if (0 === values.length % 2) {
             var v1, v2;
             idx = values.length / 2;
             v1 = values[idx - 1];
@@ -109,14 +110,17 @@
             ret = (v1 + v2) / 2;
         }
         else {
-            idx = parseInt(values.length / 2)
-            ret = values[idx]
+            idx = parseInt(values.length / 2);
+            ret = values[idx];
         }
 
-        return { 'm': ret, 'idx': idx };
+        return { 
+            m: ret, 
+            idx: idx 
+        };
     };
 
-    // CUSTOM MOD: completely rewritten quartile func
+    // CUSTOM MOD: completely rewritten quartile function
     quartile = function (values, q) {
         var ret, m, med;
         m = median(values);
@@ -125,28 +129,28 @@
             ret = m.m;
         }
         else {
-            var arr = new Array();
-            med = m.m
+            var arr = [];
+            med = m.m;
 
-            if (med != null) {
+            if (med != null) {                                                              // jshint ignore:line
                 var i = 0;
                 if (q === 1) {
                     while (i < m.idx) {
                       arr[i] = values[i];
-                      i ++;
+                      i++;
                     }
                     if (!arr.length)
-                      arr = [ values[0] ]
+                      arr = [ values[0] ];
                 }
                 else if (q === 3) {
                     var j = values.length - 1;
                     while (j > m.idx) {
                         arr[i] = values[j];
-                        i ++;
-                        j --;
+                        i++;
+                        j--;
                     }
                     if (!arr.length)
-                      arr = [ values[values.length - 1] ]
+                      arr = [ values[values.length - 1] ];
                 }
             }
             m = median(arr);
@@ -158,23 +162,23 @@
     normalizeValue = function (val) {
         var nf;
         switch (val) {
-            case 'undefined':
-                val = undefined;
-                break;
-            case 'null':
-                val = null;
-                break;
-            case 'true':
-                val = true;
-                break;
-            case 'false':
-                val = false;
-                break;
-            default:
-                nf = parseFloat(val);
-                if (val == nf) {
-                    val = nf;
-                }
+        case 'undefined':
+            val = undefined;
+            break;
+        case 'null':
+            val = null;
+            break;
+        case 'true':
+            val = true;
+            break;
+        case 'false':
+            val = false;
+            break;
+        default:
+            nf = parseFloat(val);
+            if (val == nf) {
+                val = nf;
+            }
         }
         return val;
     };
@@ -241,7 +245,7 @@
     };
 
     // http://paulirish.com/2008/bookmarklet-inject-new-css-rules/
-    addCSS = function(css) {
+    addCSS = function (css) {
         var tag, iefail;
         if (document.createStyleSheet) {
             try {

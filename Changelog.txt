@@ -1,8 +1,21 @@
 jQuery Sparkline Plugin ChangeLog
 http://omnipotent.net/jquery.sparkline/
 
-2.1.x ???
+2.1.x 29/December/2016
 
++ Make compatible with bootstrap 3
+
+
+2.1.4
+
++ Merge changes from GerHobbelt/jquery.sparkline
+
+
+2.1.3
+
++ Migrated from Makefile to Grunt for building everything in the /dist/ directory
++ Checking in everything in the /dist/ directory for ease of use with Bower.
++ Added bower.json
 + Fix for IE <= 9 for loading CSS when 31 stylesheets are already present
 
 

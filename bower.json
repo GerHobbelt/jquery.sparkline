@@ -1,0 +1,6 @@
+{
+  "name": "relayfoods-jquery.sparkline",
+  "version": "2.1.5",
+  "main": "dist/jquery.sparkline.js",
+  "ignore": ["Changelog.txt", "Gruntfile.js", "package.json", ".gitignore", "bower.json", "package.json", "src"]
+}
