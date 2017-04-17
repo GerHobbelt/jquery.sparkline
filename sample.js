@@ -83,7 +83,7 @@ function CustomDlg($) {
 
     //get values from input
     var valuesEl = $('#settings input[name*="values"]');
-    var values = valuesEl.val().split(',');
+    var values = (valuesEl.val() || '').split(',');
     //get type graph
     var typeEl = $('#settings select[name*="chart-type"]');
     var chartType = {
