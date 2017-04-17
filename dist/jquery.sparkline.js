@@ -922,7 +922,8 @@
                  tooltiphtml, sp, i, result, changeEvent;
             // localX/localY fix issue #50 with Google Chrome
             // and subpixel rendering
-
+            localX = Math.max(0, localX);
+            localY = Math.max(0, localY);
             if (!this.over) {
                 return;
             }
@@ -1753,6 +1754,11 @@
             }
 
             canvasHeight--;
+
+            if (options.get('backgroundColor') !== undefined) {
+                var backgroundColor = options.get('backgroundColor')
+                this.target.drawRect(canvasLeft, canvasTop, canvasWidth, canvasHeight, backgroundColor, backgroundColor).append();
+            }
 
             if (options.get('normalRangeMin') !== undefined && !options.get('drawNormalOnTop')) {
                 this.drawNormalRange(canvasLeft, canvasTop, canvasHeight, canvasWidth, rangey);
