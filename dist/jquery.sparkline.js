@@ -1320,6 +1320,15 @@
             if (x > cW || y > this.canvasHeight || x < 0 || y < 0) {
                 return null;
             }
+
+            // correct for device scaling factor: we convert from logical coordinates to device *canvas* coordinates here.
+            // It's hacky, but I can't find a better place to do this now... :-(
+            var target = $.data(this.el, '_jqs_vcanvas');
+            if (target) {
+                x *= target.pixelScale;
+                y *= target.pixelScale;
+            }
+
             newRegion = this.getRegion(el, x, y);
             if (currentRegion !== newRegion) {
                 if (currentRegion !== undefined && highlightEnabled) {
@@ -1768,8 +1777,8 @@
                             path = [];
                             paths.push(path);
                         }
-                        vertices.push(null);
                     }
+                    vertices.push(null);
                 } else {
                     if (y < this.miny) {
                         y = this.miny;
@@ -1936,6 +1945,10 @@
                 clipMin = chartRangeMin == null ? -Infinity : chartRangeMin;
                 clipMax = chartRangeMax == null ? Infinity : chartRangeMax;
             }
+            if (stacked) {
+                actualMin = chartRangeMin == null ? stackMin : Math.min(stackMin, chartRangeMin);
+                actualMax = chartRangeMax == null ? stackMax : Math.max(stackMax, chartRangeMax);
+            }
 
             numValues = [];
             stackRanges = stacked ? [] : numValues;
@@ -1960,7 +1973,7 @@
                                     stackRanges[i] += val;
                                 }
                             } else {
-                                stackRanges[i] += Math.abs(val - (val < 0 ? stackMax : stackMin));
+                                stackRanges[i] += Math.abs(val - (val < 0 ? actualMax : actualMin));
                             }
                             numValues.push(val);
                         }
@@ -1978,6 +1991,8 @@
             this.min = min = Math.min.apply(Math, numValues);
             this.stackMax = stackMax = stacked ? Math.max.apply(Math, stackTotals) : max;
             this.stackMin = stackMin = stacked ? Math.min.apply(Math, numValues) : min;
+            this.stackRanges = stackRanges;
+            this.stackTotals = stackTotals;
 
             if (chartRangeMin != null && (chartRangeClip || chartRangeMin < min)) {
                 min = chartRangeMin;
@@ -2016,17 +2031,7 @@
             }
             this.yoffset = yoffset;
 
-            if ($.isArray(options.get('colorMap'))) {
-                this.colorMapByIndex = options.get('colorMap');
-                this.colorMapByValue = null;
-            } else {
-                this.colorMapByIndex = null;
-                this.colorMapByValue = options.get('colorMap');
-                if (this.colorMapByValue && this.colorMapByValue.get === undefined) {
-                    this.colorMapByValue = new RangeMap(this.colorMapByValue);
-                }
-            }
-
+            this.initColorMap();
             this.range = range;
         },
 
@@ -2053,22 +2058,22 @@
         },
 
         calcColor: function (stacknum, value, valuenum) {
-            var colorMapByIndex = this.colorMapByIndex,
-                colorMapByValue = this.colorMapByValue,
+            var colorMapFunction = this.colorMapFunction,
                 options = this.options,
                 color, newColor;
-            if (this.stacked) {
-                color = options.get('stackedBarColor');
-            } else {
-                color = (value < 0) ? options.get('negBarColor') : options.get('barColor');
-            }
-            if (value === 0 && options.get('zeroColor') !== undefined) {
-                color = options.get('zeroColor');
-            }
-            if (colorMapByValue && (newColor = colorMapByValue.get(value))) {
+
+            if (colorMapFunction && (newColor = colorMapFunction(this, options, valuenum, value))) {
                 color = newColor;
-            } else if (colorMapByIndex && colorMapByIndex.length > valuenum) {
-                color = colorMapByIndex[valuenum];
+            }
+            else {
+                if (this.stacked) {
+                    color = options.get('stackedBarColor');
+                } else {
+                    color = (value < 0) ? options.get('negBarColor') : options.get('barColor');
+                }
+                if (value === 0 && options.get('zeroColor') !== undefined) {
+                    color = options.get('zeroColor');
+                }
             }
             return $.isArray(color) ? color[stacknum % color.length] : color;
         },
@@ -2087,7 +2092,9 @@
                 x = valuenum * this.totalBarWidth,
                 canvasHeightEf = this.canvasHeightEf,
                 yoffset = this.yoffset,
-                y, height, color, isNull, yoffsetNeg, i, valcount, val, minPlotted, allMin;
+                stackTotals = this.stackTotals,
+                stackRanges = this.stackRanges,
+                y, height, color, isNull, yoffsetNeg, i, valcount, val, minPlotted, allMin, reserve;
 
             vals = $.isArray(vals) ? vals : [vals];
             valcount = vals.length;
@@ -2105,6 +2112,18 @@
                 }
             }
             yoffsetNeg = yoffset;
+            console.log('bar: ', {
+                yoffsetNeg: yoffsetNeg, 
+                vals: vals, 
+                range: range, 
+                allMin: allMin, 
+                minPlotted: minPlotted, 
+                stackMin: this.stackMin, 
+                stacked: stacked, 
+                stackTotals: stackTotals, 
+                reserve: reserve, 
+                xaxisOffset: xaxisOffset
+            });
             for (i = 0; i < valcount; i++) {
                 val = vals[i];
 
@@ -2133,6 +2152,18 @@
                 if (highlight) {
                     color = this.calcHighlightColor(color, options);
                 }
+                console.log('one bar: ', {
+                  i: i, 
+                  val: val, 
+                  valuenum: valuenum, 
+                  xaxisOffset: xaxisOffset, 
+                  yoffset: yoffset, 
+                  y: y, 
+                  yoffsetNeg: yoffsetNeg, 
+                  height: height, 
+                  x: x, 
+                  color: color
+                });
                 result.push(target.drawRect(x, y, this.barWidth - 1, height - 1, color, color));
             }
             if (result.length === 1) {
@@ -2264,16 +2295,7 @@
             this.values = $.map(values, Number);
             this.width = width = (values.length * barWidth) + ((values.length - 1) * barSpacing);
 
-            if ($.isArray(options.get('colorMap'))) {
-                this.colorMapByIndex = options.get('colorMap');
-                this.colorMapByValue = null;
-            } else {
-                this.colorMapByIndex = null;
-                this.colorMapByValue = options.get('colorMap');
-                if (this.colorMapByValue && this.colorMapByValue.get === undefined) {
-                    this.colorMapByValue = new RangeMap(this.colorMapByValue);
-                }
-            }
+            this.initColorMap();
             this.initTarget();
         },
 
@@ -2292,19 +2314,15 @@
         },
 
         calcColor: function (value, valuenum) {
-            var values = this.values,
-                options = this.options,
-                colorMapByIndex = this.colorMapByIndex,
-                colorMapByValue = this.colorMapByValue,
+            var options = this.options,
+                colorMapFunction = this.colorMapFunction,
                 color, newColor;
 
-            if (colorMapByValue && (newColor = colorMapByValue.get(value))) {
+            if (colorMapFunction && (newColor = colorMapFunction(this, options, valuenum, value))) {
                 color = newColor;
-            } else if (colorMapByIndex && colorMapByIndex.length > valuenum) {
-                color = colorMapByIndex[valuenum];
-            } else if (values[valuenum] < 0) {
+            } else if (value < 0) {
                 color = options.get('negBarColor');
-            } else if (values[valuenum] > 0) {
+            } else if (value > 0) {
                 color = options.get('posBarColor');
             } else {
                 color = options.get('zeroBarColor');
@@ -2428,8 +2446,8 @@
             vals = values.slice();
             vals[0] = vals[0] === null ? vals[2] : vals[0];
             vals[1] = values[1] === null ? vals[2] : vals[1];
-            min = Math.min.apply(Math, values);
-            max = Math.max.apply(Math, values);
+            min = options.get('chartRangeMin') == null ? Math.min.apply(Math, values) : options.get('chartRangeMin');
+            max = options.get('chartRangeMax') == null ? Math.max.apply(Math, values) : options.get('chartRangeMax');
             if (options.get('base') === undefined) {
                 min = min < 0 ? min : 0;
             } else {
@@ -2438,6 +2456,20 @@
             this.min = min;
             this.max = max;
             this.range = max - min;
+            
+            // GRADIENT
+            var colors = options.get('rangeColors');
+            if (options.get('gradient') && colors.length > 1) {
+                var rainbow = new Rainbow();
+                rainbow.setSpectrumByArray(colors);
+                rainbow.setNumberRange(0, this.values.length);
+                
+                for (var i = 0; i < this.values.length; i++) {
+                    colors[i] = rainbow.colorAt(i);
+                }
+            }
+            
+            this.rangeColors = colors;
             this.shapes = {};
             this.valueShapes = {};
             this.regiondata = {};
@@ -2487,7 +2519,7 @@
         renderRange: function (rn, highlight) {
             var rangeval = this.values[rn],
                 rangewidth = Math.round(this.canvasWidth * ((rangeval - this.min) / this.range)),
-                color = this.options.get('rangeColors')[rn - 2];
+                color = this.rangeColors[rn - 2];
             if (highlight) {
                 color = this.calcHighlightColor(color, this.options);
             }
@@ -2508,12 +2540,19 @@
         renderTarget: function (highlight) {
             var targetval = this.values[0],
                 x = Math.round(this.canvasWidth * ((targetval - this.min) / this.range) - (this.options.get('targetWidth') / 2)),
-                targettop = Math.round(this.canvasHeight * 0.10),
-                targetheight = this.canvasHeight - (targettop * 2),
                 color = this.options.get('targetColor');
             if (highlight) {
                 color = this.calcHighlightColor(color, this.options);
             }
+    
+            var targettop = Math.round(this.canvasHeight * 0.10);
+
+            if (this.options.get('targetVerticalPadding') != null) {
+                targettop = this.options.get('targetVerticalPadding');
+            }
+
+            var targetheight = this.canvasHeight - (targettop * 2);
+
             return this.target.drawRect(x, targettop, this.options.get('targetWidth') - 1, targetheight - 1, color, color);
         },
 
@@ -2636,6 +2675,7 @@
                 options = this.options,
                 radius = this.radius,
                 borderWidth = options.get('borderWidth'),
+                donutWidth = options.get('donutWidth'),
                 shape, i;
 
             if (!pie._super.render.call(this)) {
@@ -2651,6 +2691,10 @@
                     this.valueShapes[i] = shape.id; // store just the shapeid
                     this.shapes[shape.id] = i;
                 }
+            }
+            if (donutWidth) {
+                target.drawCircle(radius, radius, radius - donutWidth, options.get('donutColor'), 
+                    options.get('donutColor'), 0).append();
             }
             target.render();
         }
@@ -3216,17 +3260,21 @@
             if (target[0]) {
                 target = target[0];
             }
+            this.context = this.canvas.getContext('2d');
+
+            var dpi = this.dpi = getDevicePixelRatio();
             $.data(target, '_jqs_vcanvas', this);
             $(this.canvas).css({ display: 'inline-block', width: width, height: height, verticalAlign: 'top' });
             this._insert(this.canvas, target);
+            this.context.scale(1, 1);
             this._calculatePixelDims(width, height, this.canvas);
-            this.canvas.width = this.pixelWidth;
-            this.canvas.height = this.pixelHeight;
+            this.canvas.width = this.pixelWidth * dpi;
+            this.canvas.height = this.pixelHeight * dpi;
             this.interact = interact;
             this.shapes = {};
             this.shapeseq = [];
             this.currentTargetShapeId = undefined;
-            $(this.canvas).css({width: this.pixelWidth, height: this.pixelHeight});
+            //$(this.canvas).css({width: this.pixelWidth, height: this.pixelHeight});
         },
 
         _getContext: function (lineColor, fillColor, lineWidth) {
@@ -3243,7 +3291,7 @@
 
         reset: function () {
             var context = this._getContext();
-            context.clearRect(0, 0, this.pixelWidth, this.pixelHeight);
+            context.clearRect(0, 0, this.pixelWidth * this.dpi, this.pixelHeight * this.dpi);
             this.shapes = {};
             this.shapeseq = [];
             this.currentTargetShapeId = undefined;
@@ -3417,7 +3465,10 @@
                 shapeCount = shapeseq.length,
                 context = this._getContext(),
                 shapeid, shape, i;
-            context.clearRect(0, 0, this.pixelWidth, this.pixelHeight);
+            var dpi = this.dpi;
+            context.clearRect(0, 0, this.pixelWidth * dpi, this.pixelHeight * dpi);
+            context.save();
+            context.scale(dpi, dpi);
             for (i = 0; i < shapeCount; i++) {
                 shapeid = shapeseq[i];
                 shape = shapes[shapeid];
@@ -3428,6 +3479,7 @@
                 this.shapes = {};
                 this.shapeseq = [];
             }
+            context.restore();
         }
     });
 
