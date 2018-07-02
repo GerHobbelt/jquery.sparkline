@@ -1100,9 +1100,15 @@
                     values = userValues;
                 }
 
-                width = options.get('width') === 'auto' ? values.length * options.get('defaultPixelsPerValue') : options.get('width');
+                width = options.get('width');
+                if (width === 'auto') {
+                    width = values.length * options.get('defaultPixelsPerValue');
+                } else {
+                    debugger;
+                }
                 if (options.get('height') === 'auto') {
                     if (!options.get('composite') || !$.data(this, '_jqs_vcanvas')) {
+if (0) {
                         // must be a better way to get the line height
                         tmp = document.createElement('span');
                         tmp.innerHTML = 'a';
@@ -1110,10 +1116,21 @@
                         height = $(tmp).innerHeight() || $(tmp).height();
                         $(tmp).remove();
                         tmp = null;
+} else {
+                        $this.text('X');
+                        height = $this.innerHeight() || $this.height();
+                        $this.text('');
+}
                     }
                 } else {
                     height = options.get('height');
                 }
+                console.log("Creating sparkline for located ELEMENT: ", {
+                    el: $this[0],
+                    width: width,
+                    height: height,
+                    values: values,
+                });
 
                 if (!options.get('disableInteraction')) {
                     mhandler = $.data(this, '_jqs_mhandler');
@@ -1250,6 +1267,13 @@
             this.width = width;
             this.height = height;
             this.currentRegion = undefined;
+            console.log("sparkline init: ", {
+                el: el,
+                values: values,
+                width: width,
+                height: height,
+                options: options
+            });
         },
 
         /**
@@ -1263,6 +1287,15 @@
                 this.canvasWidth = this.target.pixelWidth;
                 this.canvasHeight = this.target.pixelHeight;
             }
+            console.log("sparkline initTarget: ", {
+                el: this.$el,
+                width: this.width,
+                height: this.height,
+                disabled: this.disabled,
+                canvasWidth: this.canvasWidth,
+                canvasHeight: this.canvasHeight,
+                options: this.options
+            });
         },
 
         /**
@@ -1940,6 +1973,23 @@
             this.totalBarWidth = barWidth + barSpacing;
             var rawWidth = values.length * barWidth + (values.length - 1) * barSpacing;
             this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
+            console.log("init BAR: ", {
+                el: el,
+                width: width,
+                height: height,
+                barWidth: this.barWidth,
+                barSpacing: this.barSpacing,
+                totalBarWidth: this.totalBarWidth,
+                stacked: this.stacked,
+                values: values,
+                options: options,
+                disabled: this.disabled,
+                canvasWidth: this.canvasWidth,
+                canvasHeight: this.canvasHeight,
+                desiredWidth: (values.length * barWidth) + ((values.length - 1) * barSpacing),
+                rawWidth: rawWidth,
+                xScale: this.xScale,
+            });
             this.width = rawWidth * this.xScale; 
 
             this.initTarget();
@@ -2005,7 +2055,7 @@
             }
 
             this.zeroAxis = zeroAxis = !!options.get('zeroAxis', true);
-            if (min >= 0 && max >= 0 && zeroAxis) {
+            if (min <= 0 && max >= 0 && zeroAxis) {
                 xaxisOffset = 0;
             } else if (zeroAxis === false) {
                 xaxisOffset = min;
@@ -2151,9 +2201,9 @@
                 // New approach.
                 if (range > 0) {
                     if (range - reserve === 1) {
-                        height = canvasHeightEf * Math.abs(val / stackTotals[valuenum]) + 1;
+                        height = Math.floor(canvasHeightEf * Math.abs(val / stackTotals[valuenum]) + 1);
                     } else {
-                        height = (canvasHeightEf / (range - reserve)) * (val - xaxisOffset);
+                        height = Math.ceil((canvasHeightEf / (range - reserve)) * (val - xaxisOffset));
                     }
                 } else {
                     // range is 0 - all values are the same.
@@ -3210,13 +3260,13 @@
             var match;
             match = this._pxregex.exec(height);
             if (match) {
-                this.pixelHeight = match[1];
+                this.pixelHeight = parseFloat(match[1]);
             } else {
                 this.pixelHeight = $(canvas).height();
             }
             match = this._pxregex.exec(width);
             if (match) {
-                this.pixelWidth = match[1];
+                this.pixelWidth = parseFloat(match[1]);
             } else {
                 this.pixelWidth = $(canvas).width();
             }
