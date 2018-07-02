@@ -27,14 +27,14 @@
             var $canvas = $(canvas.canvas);
             this.canvas = canvas;
             this.$canvas = $canvas;
-            $canvas.mouseenter($.proxy(this.mouseenter, this));
-            $canvas.mouseleave($.proxy(this.mouseleave, this));
+            $canvas.on('mouseenter', this.mouseenter.bind(this));
+            $canvas.on('mouseleave', this.mouseleave.bind(this));
             if (this.touchTooltipHideEnabled) {
                 $canvas.on('touchend', function () {
-                    window.setTimeout($.proxy(self.mouseleave, self), self.touchTooltipDuration > 0 ? self.touchTooltipDuration : 500); 
+                    window.setTimeout(self.mouseleave.bind(self), self.touchTooltipDuration > 0 ? self.touchTooltipDuration : 500); 
                 });
             }
-            $canvas.click($.proxy(this.mouseclick, this));
+            $canvas.on('click', this.mouseclick.bind(this));
         },
 
         reset: function (removeTooltip) {
@@ -54,7 +54,7 @@
 
         mouseenter: function (e) {
             $(document.body).unbind('mousemove.jqs');
-            $(document.body).bind('mousemove.jqs', $.proxy(this.mousemove, this));
+            $(document.body).bind('mousemove.jqs', this.mousemove.bind(this));
             this.over = true;
             this.currentPageX = e.pageX;
             this.currentPageY = e.pageY;
@@ -179,7 +179,7 @@
             this.offsetTop = offset.top;
             this.hidden = true;
             $(window).unbind('resize.jqs scroll.jqs');
-            $(window).bind('resize.jqs scroll.jqs', $.proxy(this.updateWindowDims, this));
+            $(window).bind('resize.jqs scroll.jqs', this.updateWindowDims.bind(this));
             this.updateWindowDims();
         },
 
