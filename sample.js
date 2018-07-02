@@ -49,7 +49,7 @@
     $('#linecustom2').sparkline('html',
         {
             type: 'bar',
-            height: '1.5em', width: '8em', lineColor: '#f00', fillColor: '#ffa',
+            height: '3.5em', width: '18em', lineColor: '#f00', fillColor: '#ffa',
             minSpotColor: false, maxSpotColor: false, spotColor: '#77f', spotRadius: 3
         }
     );

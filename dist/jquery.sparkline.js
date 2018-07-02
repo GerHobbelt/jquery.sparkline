@@ -1100,9 +1100,15 @@
                     values = userValues;
                 }
 
-                width = options.get('width') === 'auto' ? values.length * options.get('defaultPixelsPerValue') : options.get('width');
+                width = options.get('width');
+                if (width === 'auto') {
+                    width = values.length * options.get('defaultPixelsPerValue');
+                } else {
+                    debugger;
+                }
                 if (options.get('height') === 'auto') {
                     if (!options.get('composite') || !$.data(this, '_jqs_vcanvas')) {
+if (0) {
                         // must be a better way to get the line height
                         tmp = document.createElement('span');
                         tmp.innerHTML = 'a';
@@ -1110,10 +1116,21 @@
                         height = $(tmp).innerHeight() || $(tmp).height();
                         $(tmp).remove();
                         tmp = null;
+} else {
+                        $this.text('X');
+                        height = $this.innerHeight() || $this.height();
+                        $this.text('');
+}
                     }
                 } else {
                     height = options.get('height');
                 }
+                console.log("Creating sparkline for located ELEMENT: ", {
+                    el: $this[0],
+                    width: width,
+                    height: height,
+                    values: values,
+                });
 
                 if (!options.get('disableInteraction')) {
                     mhandler = $.data(this, '_jqs_mhandler');
@@ -1250,6 +1267,13 @@
             this.width = width;
             this.height = height;
             this.currentRegion = undefined;
+            console.log("sparkline init: ", {
+                el: el,
+                values: values,
+                width: width,
+                height: height,
+                options: options
+            });
         },
 
         /**
@@ -1263,6 +1287,15 @@
                 this.canvasWidth = this.target.pixelWidth;
                 this.canvasHeight = this.target.pixelHeight;
             }
+            console.log("sparkline initTarget: ", {
+                el: this.$el,
+                width: this.width,
+                height: this.height,
+                disabled: this.disabled,
+                canvasWidth: this.canvasWidth,
+                canvasHeight: this.canvasHeight,
+                options: this.options
+            });
         },
 
         /**
@@ -1717,11 +1750,6 @@
             xvalues = this.xvalues;
             yvalues = this.yvalues;
 
-            if (!this.yminmax.length || this.yvalues.length < 2) {
-                // empty or all null valuess
-                return;
-            }
-
             canvasTop = canvasLeft = 0;
 
             rangex = this.maxx - this.minx === 0 ? 1 : this.maxx - this.minx;
@@ -1943,7 +1971,23 @@
             this.barWidth = barWidth;
             this.barSpacing = barSpacing;
             this.totalBarWidth = barWidth + barSpacing;
-            this.width = width = (values.length * barWidth) + ((values.length - 1) * barSpacing);
+            console.log("init BAR: ", {
+                el: el,
+                width: width,
+                height: height,
+                barWidth: this.barWidth,
+                barSpacing: this.barSpacing,
+                totalBarWidth: this.totalBarWidth,
+                stacked: this.stacked,
+                values: values,
+                options: options,
+                disabled: this.disabled,
+                canvasWidth: this.canvasWidth,
+                canvasHeight: this.canvasHeight,
+                desiredWidth: (values.length * barWidth) + ((values.length - 1) * barSpacing),
+            });
+            width = (values.length * barWidth) + ((values.length - 1) * barSpacing);
+            
 
             this.initTarget();
 
@@ -2019,7 +2063,7 @@
             }
             this.xaxisOffset = xaxisOffset;
 
-            range = stacked ? (Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg)) : max - min;
+            range = stacked ? Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg) : max - min;
 
             // as we plot zero/min values as a single pixel line, we add a pixel to all other
             // values - Reduce the effective canvas size to suit
@@ -3194,13 +3238,13 @@
             var match;
             match = this._pxregex.exec(height);
             if (match) {
-                this.pixelHeight = match[1];
+                this.pixelHeight = parseInt(match[1]);
             } else {
                 this.pixelHeight = $(canvas).height();
             }
             match = this._pxregex.exec(width);
             if (match) {
-                this.pixelWidth = match[1];
+                this.pixelWidth = parseFloat(match[1]);
             } else {
                 this.pixelWidth = $(canvas).width();
             }
