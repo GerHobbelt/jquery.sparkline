@@ -2151,7 +2151,7 @@ if (0) {
                 yoffset = this.yoffset,
                 stackTotals = this.stackTotals,
                 stackRanges = this.stackRanges,
-                y, height, color, isNull, yoffsetNeg, i, valcount, val, minPlotted, allMin, reserve;
+                y, height, color, isNull, yoffsetNeg, i, valcount, val, minPlotted, allMin;
 
             vals = $.isArray(vals) ? vals : [vals];
             valcount = vals.length;
@@ -2178,23 +2178,29 @@ if (0) {
                 stackMin: this.stackMin, 
                 stacked: stacked, 
                 stackTotals: stackTotals, 
-                reserve: reserve, 
                 xaxisOffset: xaxisOffset
             });
             for (i = 0; i < valcount; i++) {
                 val = vals[i];
 
-                if (stacked && val === xaxisOffset) {
-                    if (!allMin || minPlotted) {
-                        continue;
-                    }
+                if (val < this.stackMin && range > 1) { 
+                    continue; 
+                }           
+
+                if (allMin && minPlotted) {
+                    continue;
+                }
+
+                if (stacked && val === stackTotals[valuenum]) {
                     minPlotted = true;
                 }
 
                 if (range > 0) {
-                    height = Math.floor(canvasHeightEf * ((Math.abs(val - xaxisOffset) / range))) + 1;
+                    // height = Math.floor(canvasHeightEf * Math.abs((val - xaxisOffset) / stackTotals[valuenum]) + 1);
+                    height = 1 + Math.floor(canvasHeightEf * Math.abs(val - xaxisOffset) / range);
                 } else {
-                    height = 1;
+                    // range is 0 - all values are the same.
+                    height = Math.max(1, Math.ceil(canvasHeightEf / (valcount || 1)));
                 }
 
                 if (val < xaxisOffset || (val === xaxisOffset && yoffset === 0)) {
@@ -3256,6 +3262,17 @@ if (0) {
                 this.pixelWidth = parseFloat(match[1]);
             } else {
                 this.pixelWidth = $(canvas).width();
+            }
+            
+            if (0) {    
+              // TODO: this code tightens the fixed-width sparklines; my bet today is this bit of code is wrong & not needed.
+              var devicePixelRatio = window.devicePixelRatio || 1,
+                  backingStoreRatio = this.context.webkitBackingStorePixelRatio || this.context.mozBackingStorePixelRatio || this.context.msBackingStorePixelRatio || this.context.oBackingStorePixelRatio || this.context.backingStorePixelRatio || 1,
+                  ratio = devicePixelRatio / backingStoreRatio;
+
+              this.pixelWidth *= ratio;
+              this.pixelHeight *= ratio;
+              this.pixelScale = ratio;
             }
         },
 
