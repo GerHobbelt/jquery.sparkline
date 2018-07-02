@@ -11,6 +11,8 @@
             this.over = false;
             this.displayTooltips = !options.get('disableTooltips');
             this.highlightEnabled = !options.get('disableHighlight');
+            this.touchTooltipHideEnabled = !!options.get('touchTooltipHideEnabled');
+            this.touchTooltipDuration = options.get('touchTooltipDuration');
         },
 
         registerSparkline: function (sp) {
@@ -21,11 +23,17 @@
         },
 
         registerCanvas: function (canvas) {
+            var self = this;
             var $canvas = $(canvas.canvas);
             this.canvas = canvas;
             this.$canvas = $canvas;
             $canvas.mouseenter($.proxy(this.mouseenter, this));
             $canvas.mouseleave($.proxy(this.mouseleave, this));
+            if (this.touchTooltipHideEnabled) {
+                $canvas.on('touchend', function () {
+                    window.setTimeout($.proxy(self.mouseleave, self), self.touchTooltipDuration > 0 ? self.touchTooltipDuration : 500); 
+                });
+            }
             $canvas.click($.proxy(this.mouseclick, this));
         },
 
@@ -88,10 +96,10 @@
             this.currentPageX = e.pageX;
             this.currentPageY = e.pageY;
             this.currentEl = e.target;
+            this.updateDisplay();
             if (this.tooltip) {
                 this.tooltip.updatePosition(e.pageX, e.pageY);
             }
-            this.updateDisplay();
         },
 
         updateDisplay: function () {
@@ -104,7 +112,8 @@
                  tooltiphtml, sp, i, result, changeEvent;
             // localX/localY fix issue #50 with Google Chrome
             // and subpixel rendering
-
+            localX = Math.max(0, localX);
+            localY = Math.max(0, localY);
             if (!this.over) {
                 return;
             }
@@ -200,9 +209,10 @@
             this.getSize(content);
             this.tooltip.html(content)
                 .css({
-                    'width': this.width,
-                    'height': this.height,
-                    'visibility': 'visible'
+                    'width': this.tooltip.width,
+                    'height': this.tooltip.height,
+                    'visibility': 'visible',
+                    'pointer-events': 'none'
                 });
             if (this.hidden) {
                 this.hidden = false;

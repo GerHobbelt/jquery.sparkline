@@ -65,20 +65,7 @@
                     mhandler.registerSparkline(sp);
                 }
             };
-            if (($(this).html() && !options.get('disableHiddenCheck') && $(this).is(':hidden')) || !$(this).parents('body').length) {
-                if (!options.get('composite') && $.data(this, '_jqs_pending')) {
-                    // remove any existing references to the element
-                    for (i = pending.length; i; i--) {
-                        if (pending[i - 1][0] == this) {
-                            pending.splice(i - 1, 1);
-                        }
-                    }
-                }
-                pending.push([this, render]);
-                $.data(this, '_jqs_pending', true);
-            } else {
-                render.call(this);
-            }
+            render.call(this);
         });
     };
 
@@ -120,7 +107,7 @@
             this.tagValCache = {};
             defaults = $.fn.sparkline.defaults;
             base = defaults.common;
-            this.tagOptionsPrefix = userOptions.enableTagOptions && (userOptions.tagOptionsPrefix || base.tagOptionsPrefix);
+            this.tagOptionsPrefix = (userOptions.enableTagOptions || base.enableTagOptions) && (userOptions.tagOptionsPrefix || base.tagOptionsPrefix);
 
             tagOptionType = this.getTagSetting('type');
             if (tagOptionType === UNSET_OPTION) {
@@ -201,6 +188,30 @@
         },
 
         /**
+         * Setup colorMap from options
+         */
+        initColorMap: function() {
+            var colorMap = this.options.get('colorMap');
+            if ($.isFunction(colorMap)) {
+                this.colorMapFunction = colorMap;
+            } else if ($.isArray(colorMap)) {
+                this.colorMapFunction = function(sparkline, options, index, value) {
+                    if (index < colorMap.length) {
+                        return colorMap[index];
+                    }
+                    // else undefined
+                };
+            } else if (colorMap) {
+                if (colorMap.get === undefined) {
+                    colorMap = new RangeMap(colorMap); 
+                }
+                this.colorMapFunction = function(sparkline, options, index, value) {
+                    return colorMap.get(value);
+                };
+            }
+        },
+
+        /**
          * Actually render the chart to the canvas
          */
         render: function () {
@@ -225,11 +236,22 @@
                 highlightEnabled = !this.options.get('disableHighlight'),
                 newRegion;
             // CUSTOM MOD: proper hover detection considering padding as well
-            var cW = $('canvas',this.el).width() + parseInt($('canvas',this.el).css('padding-left')) + parseInt($('canvas',this.el).css('padding-right'))
+            var cW = $('canvas', this.el).width() + 
+                parseInt($('canvas', this.el).css('padding-left')) + 
+                parseInt($('canvas', this.el).css('padding-right'));
             // if (x > this.canvasWidth || y > this.canvasHeight || x < 0 || y < 0) {
             if (x > cW || y > this.canvasHeight || x < 0 || y < 0) {
                 return null;
             }
+
+            // correct for device scaling factor: we convert from logical coordinates to device *canvas* coordinates here.
+            // It's hacky, but I can't find a better place to do this now... :-(
+            var target = $.data(this.el, '_jqs_vcanvas');
+            if (target) {
+                x *= target.pixelScale;
+                y *= target.pixelScale;
+            }
+
             newRegion = this.getRegion(el, x, y);
             if (currentRegion !== newRegion) {
                 if (currentRegion !== undefined && highlightEnabled) {
@@ -384,7 +406,7 @@
                 shapeids = this.regionShapes[currentRegion],
                 newShapes;
             // will be null if the region value was null
-            if (shapeids) {
+            if (shapeids >= 0) {
                 newShapes = this.renderRegion(currentRegion, highlight);
                 if ($.isArray(newShapes) || $.isArray(shapeids)) {
                     target.replaceWithShapes(shapeids, newShapes);

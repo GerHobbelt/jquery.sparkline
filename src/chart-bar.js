@@ -44,13 +44,19 @@
             this.barWidth = barWidth;
             this.barSpacing = barSpacing;
             this.totalBarWidth = barWidth + barSpacing;
-            this.width = width = (values.length * barWidth) + ((values.length - 1) * barSpacing);
+            var rawWidth = values.length * barWidth + (values.length - 1) * barSpacing;
+            this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
+            this.width = rawWidth * this.xScale; 
 
             this.initTarget();
 
             if (chartRangeClip) {
-                clipMin = chartRangeMin === undefined ? -Infinity : chartRangeMin;
-                clipMax = chartRangeMax === undefined ? Infinity : chartRangeMax;
+                clipMin = chartRangeMin == null ? -Infinity : chartRangeMin;
+                clipMax = chartRangeMax == null ? Infinity : chartRangeMax;
+            }
+            if (stacked) {
+                actualMin = chartRangeMin == null ? stackMin : Math.min(stackMin, chartRangeMin);
+                actualMax = chartRangeMax == null ? stackMax : Math.max(stackMax, chartRangeMax);
             }
 
             numValues = [];
@@ -76,7 +82,7 @@
                                     stackRanges[i] += val;
                                 }
                             } else {
-                                stackRanges[i] += Math.abs(val - (val < 0 ? stackMax : stackMin));
+                                stackRanges[i] += Math.abs(val - (val < 0 ? actualMax : actualMin));
                             }
                             numValues.push(val);
                         }
@@ -94,18 +100,20 @@
             this.min = min = Math.min.apply(Math, numValues);
             this.stackMax = stackMax = stacked ? Math.max.apply(Math, stackTotals) : max;
             this.stackMin = stackMin = stacked ? Math.min.apply(Math, numValues) : min;
+            this.stackRanges = stackRanges;
+            this.stackTotals = stackTotals;
 
-            if (options.get('chartRangeMin') !== undefined && (options.get('chartRangeClip') || options.get('chartRangeMin') < min)) {
-                min = options.get('chartRangeMin');
+            if (chartRangeMin != null && (chartRangeClip || chartRangeMin < min)) {
+                min = chartRangeMin;
             }
-            if (options.get('chartRangeMax') !== undefined && (options.get('chartRangeClip') || options.get('chartRangeMax') > max)) {
-                max = options.get('chartRangeMax');
+            if (chartRangeMax != null && (chartRangeClip || chartRangeMax > max)) {
+                max = chartRangeMax;
             }
 
-            this.zeroAxis = zeroAxis = options.get('zeroAxis', true);
-            if (min <= 0 && max >= 0 && zeroAxis) {
+            this.zeroAxis = zeroAxis = !!options.get('zeroAxis', true);
+            if (min >= 0 && max >= 0 && zeroAxis) {
                 xaxisOffset = 0;
-            } else if (zeroAxis == false) {
+            } else if (zeroAxis === false) {
                 xaxisOffset = min;
             } else if (min > 0) {
                 xaxisOffset = min;
@@ -114,8 +122,11 @@
             }
             this.xaxisOffset = xaxisOffset;
 
-            range = stacked ? (Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg)) : max - min;
-
+            if (zeroAxis) {
+                range = stacked ? stackMax : max;
+            } else {
+                range = stacked ? Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg) : max - min;
+            }
             // as we plot zero/min values as a single pixel line, we add a pixel to all other
             // values - Reduce the effective canvas size to suit
             this.canvasHeightEf = (zeroAxis && min < 0) ? this.canvasHeight - 2 : this.canvasHeight - 1;
@@ -132,21 +143,12 @@
             }
             this.yoffset = yoffset;
 
-            if ($.isArray(options.get('colorMap'))) {
-                this.colorMapByIndex = options.get('colorMap');
-                this.colorMapByValue = null;
-            } else {
-                this.colorMapByIndex = null;
-                this.colorMapByValue = options.get('colorMap');
-                if (this.colorMapByValue && this.colorMapByValue.get === undefined) {
-                    this.colorMapByValue = new RangeMap(this.colorMapByValue);
-                }
-            }
-
+            this.initColorMap();
             this.range = range;
         },
 
         getRegion: function (el, x, y) {
+            x /= this.xScale; 
             var result = Math.floor(x / this.totalBarWidth);
             return (result < 0 || result >= this.values.length) ? undefined : result;
         },
@@ -169,22 +171,22 @@
         },
 
         calcColor: function (stacknum, value, valuenum) {
-            var colorMapByIndex = this.colorMapByIndex,
-                colorMapByValue = this.colorMapByValue,
+            var colorMapFunction = this.colorMapFunction,
                 options = this.options,
                 color, newColor;
-            if (this.stacked) {
-                color = options.get('stackedBarColor');
-            } else {
-                color = (value < 0) ? options.get('negBarColor') : options.get('barColor');
-            }
-            if (value === 0 && options.get('zeroColor') !== undefined) {
-                color = options.get('zeroColor');
-            }
-            if (colorMapByValue && (newColor = colorMapByValue.get(value))) {
+
+            if (colorMapFunction && (newColor = colorMapFunction(this, options, valuenum, value))) {
                 color = newColor;
-            } else if (colorMapByIndex && colorMapByIndex.length > valuenum) {
-                color = colorMapByIndex[valuenum];
+            }
+            else {
+                if (this.stacked) {
+                    color = options.get('stackedBarColor');
+                } else {
+                    color = (value < 0) ? options.get('negBarColor') : options.get('barColor');
+                }
+                if (value === 0 && options.get('zeroColor') !== undefined) {
+                    color = options.get('zeroColor');
+                }
             }
             return $.isArray(color) ? color[stacknum % color.length] : color;
         },
@@ -203,7 +205,9 @@
                 x = valuenum * this.totalBarWidth,
                 canvasHeightEf = this.canvasHeightEf,
                 yoffset = this.yoffset,
-                y, height, color, isNull, yoffsetNeg, i, valcount, val, minPlotted, allMin;
+                stackTotals = this.stackTotals,
+                stackRanges = this.stackRanges,
+                y, height, color, isNull, yoffsetNeg, i, valcount, val, minPlotted, allMin, reserve;
 
             vals = $.isArray(vals) ? vals : [vals];
             valcount = vals.length;
@@ -221,20 +225,45 @@
                 }
             }
             yoffsetNeg = yoffset;
+            console.log('bar: ', {
+                yoffsetNeg: yoffsetNeg, 
+                vals: vals, 
+                range: range, 
+                allMin: allMin, 
+                minPlotted: minPlotted, 
+                stackMin: this.stackMin, 
+                stacked: stacked, 
+                stackTotals: stackTotals, 
+                reserve: reserve, 
+                xaxisOffset: xaxisOffset
+            });
             for (i = 0; i < valcount; i++) {
                 val = vals[i];
 
-                if (stacked && val === xaxisOffset) {
-                    if (!allMin || minPlotted) {
-                        continue;
-                    }
+                if (val < this.stackMin && range > 1) { 
+                    continue; 
+                }           
+
+                if (allMin && minPlotted) {
+                    continue;
+                }
+
+                if (stacked && val === stackTotals[valuenum]) {
                     minPlotted = true;
                 }
 
+                height = 0;
+                reserve = 0;
+                // New approach.
                 if (range > 0) {
-                    height = Math.floor(canvasHeightEf * ((Math.abs(val - xaxisOffset) / range))) + 1;
+                    if (range - reserve === 1) {
+                        height = canvasHeightEf * Math.abs(val / stackTotals[valuenum]) + 1;
+                    } else {
+                        height = (canvasHeightEf / (range - reserve)) * (val - xaxisOffset);
+                    }
                 } else {
-                    height = 1;
+                    // range is 0 - all values are the same.
+                    height = Math.ceil(canvasHeightEf / (valcount || 1));
                 }
 
                 if (val < xaxisOffset || (val === xaxisOffset && yoffset === 0)) {
@@ -249,7 +278,19 @@
                 if (highlight) {
                     color = this.calcHighlightColor(color, options);
                 }
-                result.push(target.drawRect(x, y, this.barWidth - 1, height - 1, color, color));
+                console.log('one bar: ', {
+                  i: i, 
+                  val: val, 
+                  valuenum: valuenum, 
+                  xaxisOffset: xaxisOffset, 
+                  yoffset: yoffset, 
+                  y: y, 
+                  yoffsetNeg: yoffsetNeg, 
+                  height: height, 
+                  x: x, 
+                  color: color
+                });
+                result.push(target.drawRect(x * this.xScale, y, (this.barWidth - 1) * this.xScale, Math.abs(height), color, color));
             }
             if (result.length === 1) {
                 return result[0];

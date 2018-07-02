@@ -12,14 +12,16 @@
                 width: 'auto',
                 height: 'auto',
                 composite: false,
-                tagValuesAttribute: 'values',
-                tagOptionsPrefix: 'spark',
-                enableTagOptions: false,
+                tagValuesAttribute: 'data-values',
+                tagOptionsPrefix: 'data-spark-',
+                enableTagOptions: true,
                 enableHighlight: true,
                 highlightLighten: 1.4,
                 tooltipSkipNull: true,
                 tooltipPrefix: '',
                 tooltipSuffix: '',
+                touchTooltipHideEnabled: true,
+                touchTooltipDuration: 500,
                 disableHiddenCheck: false,
                 numberFormatter: false,
                 numberDigitGroupCount: 3,
@@ -110,11 +112,14 @@
             bullet: {
                 targetColor: '#f33',
                 targetWidth: 3, // width of the target bar in pixels
+                targetVerticalPadding: null,
                 performanceColor: '#33f',
                 rangeColors: ['#d3dafe', '#a8b6ff', '#7f94ff'],
                 base: undefined, // set this to a number to change the base start number
                 tooltipFormat: new SPFormat('{{fieldkey:fields}} - {{value}}'),
-                tooltipValueLookups: { fields: {r: 'Range', p: 'Performance', t: 'Target'} }
+                tooltipValueLookups: { fields: {r: 'Range', p: 'Performance', t: 'Target'} },
+                chartRangeMax: undefined,
+                chartRangeMin: undefined,
             },
             // Defaults for pie charts
             pie: {
@@ -159,6 +164,11 @@
         };
     };
 
+    // Bootstrap adds box-sizing that messes with alignment in the tooltip.
+    var box_sizing = '-webkit-box-sizing: content-box !important;' +
+          '-moz-box-sizing: content-box !important;' +
+          'box-sizing: content-box !important;';
+
     // You can have tooltips use a css class other than jqstooltip by specifying tooltipClassname
     defaultStyles = '.jqstooltip { ' +
             'position: absolute;' +
@@ -175,12 +185,14 @@
             'white-space: nowrap;' +
             'padding: 5px;' +
             'border: 1px solid white;' +
-            'box-sizing: content-box;' +
             'z-index: 10000;' +
+            box_sizing +
             '}' +
             '.jqsfield { ' +
             'color: white;' +
             'font: 10px arial, san serif;' +
             'text-align: left;' +
+            '}' +
+            '.jqstooltip:before, .jqstooltip:after { ' +
+            box_sizing +
             '}';
-

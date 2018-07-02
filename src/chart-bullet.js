@@ -14,8 +14,8 @@
             vals = values.slice();
             vals[0] = vals[0] === null ? vals[2] : vals[0];
             vals[1] = values[1] === null ? vals[2] : vals[1];
-            min = Math.min.apply(Math, values);
-            max = Math.max.apply(Math, values);
+            min = options.get('chartRangeMin') == null ? Math.min.apply(Math, values) : options.get('chartRangeMin');
+            max = options.get('chartRangeMax') == null ? Math.max.apply(Math, values) : options.get('chartRangeMax');
             if (options.get('base') === undefined) {
                 min = min < 0 ? min : 0;
             } else {
@@ -24,6 +24,20 @@
             this.min = min;
             this.max = max;
             this.range = max - min;
+            
+            // GRADIENT
+            var colors = options.get('rangeColors');
+            if (options.get('gradient') && colors.length > 1) {
+                var rainbow = new Rainbow();
+                rainbow.setSpectrumByArray(colors);
+                rainbow.setNumberRange(0, this.values.length);
+                
+                for (var i = 0; i < this.values.length; i++) {
+                    colors[i] = rainbow.colorAt(i);
+                }
+            }
+            
+            this.rangeColors = colors;
             this.shapes = {};
             this.valueShapes = {};
             this.regiondata = {};
@@ -73,7 +87,7 @@
         renderRange: function (rn, highlight) {
             var rangeval = this.values[rn],
                 rangewidth = Math.round(this.canvasWidth * ((rangeval - this.min) / this.range)),
-                color = this.options.get('rangeColors')[rn - 2];
+                color = this.rangeColors[rn - 2];
             if (highlight) {
                 color = this.calcHighlightColor(color, this.options);
             }
@@ -94,12 +108,19 @@
         renderTarget: function (highlight) {
             var targetval = this.values[0],
                 x = Math.round(this.canvasWidth * ((targetval - this.min) / this.range) - (this.options.get('targetWidth') / 2)),
-                targettop = Math.round(this.canvasHeight * 0.10),
-                targetheight = this.canvasHeight - (targettop * 2),
                 color = this.options.get('targetColor');
             if (highlight) {
                 color = this.calcHighlightColor(color, this.options);
             }
+    
+            var targettop = Math.round(this.canvasHeight * 0.10);
+
+            if (this.options.get('targetVerticalPadding') != null) {
+                targettop = this.options.get('targetVerticalPadding');
+            }
+
+            var targetheight = this.canvasHeight - (targettop * 2);
+
             return this.target.drawRect(x, targettop, this.options.get('targetWidth') - 1, targetheight - 1, color, color);
         },
 

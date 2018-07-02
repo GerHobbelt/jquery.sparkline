@@ -14,18 +14,11 @@
             this.barSpacing = barSpacing;
             this.totalBarWidth = barWidth + barSpacing;
             this.values = $.map(values, Number);
-            this.width = width = (values.length * barWidth) + ((values.length - 1) * barSpacing);
+            var rawWidth = (values.length * barWidth) + ((values.length - 1) * barSpacing);
+            this.xScale = Math.min(1, rawWidth ? width / rawWidth : 1);
+            this.width = rawWidth * this.xScale; 
 
-            if ($.isArray(options.get('colorMap'))) {
-                this.colorMapByIndex = options.get('colorMap');
-                this.colorMapByValue = null;
-            } else {
-                this.colorMapByIndex = null;
-                this.colorMapByValue = options.get('colorMap');
-                if (this.colorMapByValue && this.colorMapByValue.get === undefined) {
-                    this.colorMapByValue = new RangeMap(this.colorMapByValue);
-                }
-            }
+            this.initColorMap();
             this.initTarget();
         },
 
@@ -44,19 +37,15 @@
         },
 
         calcColor: function (value, valuenum) {
-            var values = this.values,
-                options = this.options,
-                colorMapByIndex = this.colorMapByIndex,
-                colorMapByValue = this.colorMapByValue,
+            var options = this.options,
+                colorMapFunction = this.colorMapFunction,
                 color, newColor;
 
-            if (colorMapByValue && (newColor = colorMapByValue.get(value))) {
+            if (colorMapFunction && (newColor = colorMapFunction(this, options, valuenum, value))) {
                 color = newColor;
-            } else if (colorMapByIndex && colorMapByIndex.length > valuenum) {
-                color = colorMapByIndex[valuenum];
-            } else if (values[valuenum] < 0) {
+            } else if (value < 0) {
                 color = options.get('negBarColor');
-            } else if (values[valuenum] > 0) {
+            } else if (value > 0) {
                 color = options.get('posBarColor');
             } else {
                 color = options.get('zeroBarColor');
@@ -92,7 +81,7 @@
             if (highlight) {
                 color = this.calcHighlightColor(color, options);
             }
-            return target.drawRect(x, y, this.barWidth - 1, height - 1, color, color);
+            return target.drawRect(x * this.xScale, y, (this.barWidth - 1) * this.xScale, height - 1, color, color);
         }
     });
 
