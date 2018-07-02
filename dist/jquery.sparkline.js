@@ -2054,7 +2054,7 @@ if (0) {
                 max = chartRangeMax;
             }
 
-            this.zeroAxis = zeroAxis = options.get('zeroAxis', true);
+            this.zeroAxis = zeroAxis = !!options.get('zeroAxis', true);
             if (min <= 0 && max >= 0 && zeroAxis) {
                 xaxisOffset = 0;
             } else if (zeroAxis === false) {
@@ -2066,8 +2066,11 @@ if (0) {
             }
             this.xaxisOffset = xaxisOffset;
 
-            range = stacked ? Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg) : max - min;
-
+            if (zeroAxis) {
+                range = stacked ? stackMax : max;
+            } else {
+                range = stacked ? Math.max.apply(Math, stackRanges) + Math.max.apply(Math, stackRangesNeg) : max - min;
+            }
             // as we plot zero/min values as a single pixel line, we add a pixel to all other
             // values - Reduce the effective canvas size to suit
             this.canvasHeightEf = (zeroAxis && min < 0) ? this.canvasHeight - 2 : this.canvasHeight - 1;
@@ -3244,7 +3247,7 @@ if (0) {
             var match;
             match = this._pxregex.exec(height);
             if (match) {
-                this.pixelHeight = parseInt(match[1]);
+                this.pixelHeight = parseFloat(match[1]);
             } else {
                 this.pixelHeight = $(canvas).height();
             }
